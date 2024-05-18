@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 const (
@@ -42,11 +41,11 @@ type MangaPage struct {
 // TODO: Make imageQuality a special type.
 //
 // Get: Get list of all chapter pages.
-func (s *PageService) Get(id int, splitImages bool, imageQuality string) ([]MangaPage, error) {
+func (s *PageService) Get(id string, splitImages bool, imageQuality string) ([]MangaPage, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(PagePath)
 	allParams := s.client.params
-	allParams.Set("chapter_id", strconv.Itoa(id))
+	allParams.Set("chapter_id", id)
 	split := "no"
 	if splitImages {
 		split = "yes"
@@ -62,7 +61,7 @@ func (s *PageService) Get(id int, splitImages bool, imageQuality string) ([]Mang
 	}
 	mangaViewer := res.Success.MangaViewer
 	if mangaViewer == nil {
-		return nil, fmt.Errorf("Error: unexpectd issue while getting pages for chapter id %d", id)
+		return nil, fmt.Errorf("Error: unexpectd issue while getting pages for chapter id %s", id)
 	}
 
 	var pages []MangaPage

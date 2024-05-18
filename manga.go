@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 const (
@@ -76,11 +75,11 @@ type Title struct {
 // }
 
 // Get: Get manga details by ID.
-func (s *MangaService) Get(id int) (TitleDetailView, error) {
+func (s *MangaService) Get(id string) (TitleDetailView, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(MangaPath)
 	allParams := s.client.params
-	allParams.Set("title_id", strconv.Itoa(id))
+	allParams.Set("title_id", id)
 	allParams.Set("format", "json")
 	u.RawQuery = allParams.Encode()
 
@@ -90,7 +89,7 @@ func (s *MangaService) Get(id int) (TitleDetailView, error) {
 	}
 	titleDetail := res.Success.TitleDetailView
 	if titleDetail == nil {
-		return TitleDetailView{}, fmt.Errorf("Error: no details for manga id %d", id)
+		return TitleDetailView{}, fmt.Errorf("Error: no details for manga id %s", id)
 	}
 	return *titleDetail, nil
 }
