@@ -8,6 +8,23 @@ const (
 	ImageQualitySuperHigh ImageQuality = "super_high"
 )
 
+
+// StringToImageQuality: Get the corresponding ImageQuality given a string.
+//
+// Defaults to ImageQualitySuperHigh.
+func StringToImageQuality(str string) ImageQuality {
+	switch str {
+	case "low":
+		return ImageQualityLow
+	case "high":
+		return ImageQualityHigh
+	case "super_high":
+		return ImageQualitySuperHigh
+	default:
+		return ImageQualitySuperHigh
+	}
+}
+
 type Rating string
 
 const (
@@ -33,6 +50,8 @@ const (
 
 // ToCode: Get the corresponding Language code.
 //
+// Defaults to "en".
+//
 // Using MangaDex as reference: https://api.mangadex.org/docs/3-enumerations/#language-codes--localization
 func (l Language) ToCode() string {
 	switch l {
@@ -57,16 +76,17 @@ func (l Language) ToCode() string {
 	case LanguageGerman:
 		return "de"
 	default:
-		// TODO: add warning
 		return "en"
 	}
 }
 
-// FromLanguageCode: Get the corresponding Language type from a Language code.
+// StringToLanguage: Get the corresponding Language type from a Language code.
+//
+// Defaults to LanguageEnglish.
 //
 // Using MangaDex as reference: https://api.mangadex.org/docs/3-enumerations/#language-codes--localization
-func FromLanguageCode(code string) Language {
-	switch code {
+func StringToLanguage(languageCode string) Language {
+	switch languageCode {
 	case "en":
 		return LanguageEnglish
 	case "es", "es-la":
@@ -86,7 +106,6 @@ func FromLanguageCode(code string) Language {
 	case "de":
 		return LanguageGerman
 	default:
-		// TODO: add warning
 		return LanguageEnglish
 	}
 }
