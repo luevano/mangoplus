@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/google/uuid"
 )
 
 const (
-	OriginURL = "https://mangaplus.shueisha.co.jp"
-	BaseAPI   = "https://jumpg-webapi.tokyo-cdn.com/api"
+	OriginURL   = "https://mangaplus.shueisha.co.jp"
+	BaseAPI     = "https://jumpg-webapi.tokyo-cdn.com/api"
+	DefaultUUID = "710aedb9-8614-4fe2-84d5-90624d5af04d"
 )
 
 // PlusResponse: Generic MangaPlus API response type, most responses have this structure.
@@ -25,6 +25,8 @@ type PlusResponse struct {
 
 // ErrorResponse: Generic error response.
 type ErrorResponse struct {
+	// Not sure if English/Spanish are always the ones that
+	// appear on top, could be specific to me.
 	EnglishPopup *Popup   `json:"englishPopup"`
 	SpanishPopup *Popup   `json:"spanishPopup"`
 	Popups       *[]Popup `json:"popups"`
@@ -39,12 +41,15 @@ type SuccessResponse struct {
 	Languages         *Languages       `json:"languages"`
 }
 
+// Languages: Part of the response when requesting all of the manga.
+//
+// Not really used.
 type Languages struct {
-	DefaultUILanguage         string `json:"defaultUiLanguage"`
-	DefaultContentLanguageOne string `json:"defaultContentLanguageOne"`
+	DefaultUILanguage         Language `json:"defaultUiLanguage"`
+	DefaultContentLanguageOne Language `json:"defaultContentLanguageOne"`
 	AvailableLanguages        []struct {
-		Language    *string `json:"language"`
-		TitlesCount int     `json:"titlesCount"`
+		Language    *Language `json:"language"`
+		TitlesCount int       `json:"titlesCount"`
 	} `json:"availableLanguages"`
 }
 
@@ -52,10 +57,8 @@ type Languages struct {
 type PlusClient struct {
 	client *http.Client
 	header http.Header
-	params url.Values
 
-	common       service
-	refreshToken string // Unused
+	common service
 
 	// Services for MangaPlus API.
 	Manga *MangaService
@@ -71,26 +74,23 @@ type service struct {
 func NewPlusClient() *PlusClient {
 	client := http.Client{}
 	header := http.Header{}
-	params := url.Values{}
 
+	// Not sure if these headers are needed.
+	// The page downloader uses different client/headers.
 	header.Set("Origin", OriginURL)
 	header.Set("Referer", fmt.Sprintf("%s/", OriginURL))
 	header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+
 	randUUID, err := uuid.NewRandom()
 	if err != nil {
-		fmt.Println("Error generating random UUID.")
-		return nil
+		header.Set("SESSION-TOKEN", DefaultUUID)
+	} else {
+		header.Set("SESSION-TOKEN", randUUID.String())
 	}
-	header.Set("SESSION-TOKEN", randUUID.String())
-
-	// params.Set("os", "android")
-	// params.Set("os_ver", "30")
-	// params.Set("app_ver", "133")
 
 	plus := &PlusClient{
 		client: &client,
 		header: header,
-		params: params,
 	}
 	plus.common.client = plus
 

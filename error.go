@@ -11,9 +11,8 @@ type Popup struct {
 	CancelButton struct {
 		Text string `json:"text"`
 	} `json:"cancelButton"`
-	Language *string `json:"language"`
+	Language *Language `json:"language"`
 }
-
 
 // TODO: handle one specific language instead of the first in the list
 //

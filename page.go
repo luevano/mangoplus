@@ -23,7 +23,7 @@ type MangaViewer struct {
 	NumberOfComments int       `json:"numberOfComments"`
 	TitleID          int       `json:"titleId"`
 	RegionCode       string    `json:"regionCode"`
-	TitleLanguage    string    `json:"titleLanguage"`
+	TitleLanguage    string    `json:"titleLanguage"` // This uses a completely different format than that of other Language fields
 }
 
 type Page struct {
@@ -35,25 +35,26 @@ type MangaPage struct {
 	ImageURL      string  `json:"imageUrl"`
 	Width         int     `json:"width"`
 	Height        int     `json:"height"`
+	Type          *string  `json:"type"` // Could be "DOUBLE" (double paged)
 	EncryptionKey *string `json:"encryptionKey"`
 }
 
-// TODO: Make imageQuality a special type.
-//
 // Get: Get list of all chapter pages.
-func (s *PageService) Get(id string, splitImages bool, imageQuality string) ([]MangaPage, error) {
+func (s *PageService) Get(id string, splitImages bool, imageQuality ImageQuality) ([]MangaPage, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(PagePath)
-	allParams := s.client.params
-	allParams.Set("chapter_id", id)
+
 	split := "no"
 	if splitImages {
 		split = "yes"
 	}
-	allParams.Set("split", split)
-	allParams.Set("img_quality", imageQuality)
-	allParams.Set("format", "json")
-	u.RawQuery = allParams.Encode()
+	p := url.Values{}
+	p.Set("chapter_id", id)
+	p.Set("split", split)
+	p.Set("img_quality", string(imageQuality))
+	p.Set("format", "json")
+
+	u.RawQuery = p.Encode()
 
 	res, err := s.client.Request(context.Background(), http.MethodGet, u.String(), nil)
 	if err != nil {
