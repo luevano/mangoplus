@@ -55,8 +55,9 @@ type Languages struct {
 
 // PlusClient: The MangaPlus client.
 type PlusClient struct {
-	client *http.Client
-	secret *string
+	client  *http.Client
+	secret  *string
+	options Options
 
 	common service
 
@@ -71,11 +72,16 @@ type service struct {
 }
 
 // NewPlusClient: New MangaPlus client.
-func NewPlusClient() *PlusClient {
-	client := http.Client{}
-	plus := &PlusClient{client: &client}
-	plus.common.client = plus
+//
+// Options must be non-nil. Use DefaultOptions for defaults, all fields must be non-empty.
+func NewPlusClient(options Options) *PlusClient {
+	options.validate()
 
+	client := http.Client{}
+	plus := &PlusClient{client: &client, options: options}
+	plus.register()
+
+	plus.common.client = plus
 	// Reuse the common client for the other services
 	plus.Manga = (*MangaService)(&plus.common)
 	plus.Page = (*PageService)(&plus.common)
@@ -127,8 +133,8 @@ func (c *PlusClient) Request(
 func (c *PlusClient) getFinalParams(params map[string]string) url.Values {
 	p := url.Values{}
 	p.Set("os", "android")
-	p.Set("os_ver", "30")
-	p.Set("app_ver", "133")
+	p.Set("os_ver", c.options.OSVersion)
+	p.Set("app_ver", c.options.AppVersion)
 	p.Set("format", "json")
 	if c.secret != nil {
 		p.Set("secret", *c.secret)
@@ -142,7 +148,7 @@ func (c *PlusClient) getFinalParams(params map[string]string) url.Values {
 func (c *PlusClient) getFinalHeaders(headers map[string]string) http.Header {
 	h := http.Header{}
 	h.Set("Accept", "*/*") // needed?
-	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+	h.Set("User-Agent", c.options.UserAgent)
 	for k, v := range headers {
 		h.Set(k, v)
 	}

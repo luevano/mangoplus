@@ -15,12 +15,12 @@ type RegisterationData struct {
 	DeviceSecret string `json:"deviceSecret"`
 }
 
-func (c *PlusClient) Register(id string) error {
+func (c *PlusClient) register() error {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(RegisterPath)
 
-	// TODO: revise if the extra part of the key is required
-	deviceToken := md5Hex(id)
+	// TODO: investigate if the extra part of the key is required
+	deviceToken := md5Hex(c.options.AndroidID)
 	securityKey := md5Hex(deviceToken + "4Kin9vGg")
 	p := map[string]string{
 		"device_token": deviceToken,

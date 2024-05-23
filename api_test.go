@@ -2,7 +2,7 @@ package mangoplus
 
 import "testing"
 
-var client = NewPlusClient()
+var client = NewPlusClient(DefaultOptions())
 
 //
 // manga.go
