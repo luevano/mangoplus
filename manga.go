@@ -60,33 +60,13 @@ type Title struct {
 	TitleUpdateStatus *string   `json:"titleUpdateStatus"`
 }
 
-// TODO: make similar helper methods
-
-// GetTitle: Get title of the manga.
-// func (m *Manga) GetTitle(langCode string) string {
-// 	if title := m.Attributes.Title.GetLocalString(langCode); title != "" {
-// 		return title
-// 	}
-// 	return m.Attributes.AltTitles.GetLocalString(langCode)
-// }
-
-// GetDescription: Get description of the manga.
-// func (m *Manga) GetDescription(langCode string) string {
-// 	return m.Attributes.Description.GetLocalString(langCode)
-// }
-
 // Get: Get manga details by ID.
 func (s *MangaService) Get(id string) (TitleDetailView, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(MangaPath)
+	p := map[string]string{"title_id": id}
 
-	p := url.Values{}
-	p.Set("title_id", id)
-	p.Set("format", "json")
-
-	u.RawQuery = p.Encode()
-
-	res, err := s.client.Request(context.Background(), http.MethodGet, u.String(), nil)
+	res, err := s.client.Request(context.Background(), http.MethodGet, *u, p, nil, nil)
 	if err != nil {
 		return TitleDetailView{}, err
 	}
@@ -102,12 +82,7 @@ func (s *MangaService) All() ([]AllTitlesGroup, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(AllMangaPath)
 
-	p := url.Values{}
-	p.Set("format", "json")
-
-	u.RawQuery = p.Encode()
-
-	res, err := s.client.Request(context.Background(), http.MethodGet, u.String(), nil)
+	res, err := s.client.Request(context.Background(), http.MethodGet, *u, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ package mangoplus
 type ChapterListGroup struct {
 	ChapterNumbers   string    `json:"chapterNumbers"`
 	FirstChapterList []Chapter `json:"firstChapterList"`
-	MidChapterList   []Chapter `json:"midChapterList"` // Not really required, these aren't downloadable
+	MidChapterList   []Chapter `json:"midChapterList"`
 	LastChapterList  []Chapter `json:"lastChapterList"`
 }
 

@@ -35,7 +35,7 @@ type MangaPage struct {
 	ImageURL      string  `json:"imageUrl"`
 	Width         int     `json:"width"`
 	Height        int     `json:"height"`
-	Type          *string  `json:"type"` // Could be "DOUBLE" (double paged)
+	Type          *string `json:"type"` // Could be "DOUBLE" (double paged)
 	EncryptionKey *string `json:"encryptionKey"`
 }
 
@@ -48,21 +48,19 @@ func (s *PageService) Get(id string, splitImages bool, imageQuality ImageQuality
 	if splitImages {
 		split = "yes"
 	}
-	p := url.Values{}
-	p.Set("chapter_id", id)
-	p.Set("split", split)
-	p.Set("img_quality", string(imageQuality))
-	p.Set("format", "json")
+	p := map[string]string{
+		"chapter_id":  id,
+		"split":       split,
+		"img_quality": string(imageQuality),
+	}
 
-	u.RawQuery = p.Encode()
-
-	res, err := s.client.Request(context.Background(), http.MethodGet, u.String(), nil)
+	res, err := s.client.Request(context.Background(), http.MethodGet, *u, p, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	mangaViewer := res.Success.MangaViewer
 	if mangaViewer == nil {
-		return nil, fmt.Errorf("Error: unexpectd issue while getting pages for chapter id %s", id)
+		return nil, fmt.Errorf("Error: unexpected issue while getting pages for chapter id %s", id)
 	}
 
 	var pages []MangaPage

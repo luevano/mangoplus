@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/google/uuid"
+	"net/url"
 )
 
 const (
-	OriginURL   = "https://mangaplus.shueisha.co.jp"
-	BaseAPI     = "https://jumpg-webapi.tokyo-cdn.com/api"
-	DefaultUUID = "710aedb9-8614-4fe2-84d5-90624d5af04d"
+	BaseAPI    = "https://jumpg-api.tokyo-cdn.com/api"
+	BaseWebAPI = "https://jumpg-webapi.tokyo-cdn.com/api" // Limited to what's available on the browser
+	OriginURL  = "https://mangaplus.shueisha.co.jp"       // Not used
 )
 
 // PlusResponse: Generic MangaPlus API response type, most responses have this structure.
@@ -34,11 +33,12 @@ type ErrorResponse struct {
 
 // SuccessResponse: Generic success response.
 type SuccessResponse struct {
-	IsFeaturedUpdated *bool            `json:"isFeaturedUpdated"`
-	TitleDetailView   *TitleDetailView `json:"titleDetailView"`
-	MangaViewer       *MangaViewer     `json:"mangaViewer"`
-	AllTitlesViewV2   *AllTitlesViewV2 `json:"allTitlesViewV2"`
-	Languages         *Languages       `json:"languages"`
+	IsFeaturedUpdated *bool              `json:"isFeaturedUpdated"`
+	RegisterationData *RegisterationData `json:"registerationData"`
+	TitleDetailView   *TitleDetailView   `json:"titleDetailView"`
+	MangaViewer       *MangaViewer       `json:"mangaViewer"`
+	AllTitlesViewV2   *AllTitlesViewV2   `json:"allTitlesViewV2"`
+	Languages         *Languages         `json:"languages"`
 }
 
 // Languages: Part of the response when requesting all of the manga.
@@ -56,7 +56,7 @@ type Languages struct {
 // PlusClient: The MangaPlus client.
 type PlusClient struct {
 	client *http.Client
-	header http.Header
+	secret *string
 
 	common service
 
@@ -73,25 +73,7 @@ type service struct {
 // NewPlusClient: New MangaPlus client.
 func NewPlusClient() *PlusClient {
 	client := http.Client{}
-	header := http.Header{}
-
-	// Not sure if these headers are needed.
-	// The page downloader uses different client/headers.
-	header.Set("Origin", OriginURL)
-	header.Set("Referer", fmt.Sprintf("%s/", OriginURL))
-	header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
-
-	randUUID, err := uuid.NewRandom()
-	if err != nil {
-		header.Set("SESSION-TOKEN", DefaultUUID)
-	} else {
-		header.Set("SESSION-TOKEN", randUUID.String())
-	}
-
-	plus := &PlusClient{
-		client: &client,
-		header: header,
-	}
+	plus := &PlusClient{client: &client}
 	plus.common.client = plus
 
 	// Reuse the common client for the other services
@@ -102,12 +84,22 @@ func NewPlusClient() *PlusClient {
 }
 
 // Request: Sends a request to the MangaPlus API and decodes into a PlusResponse.
-func (c *PlusClient) Request(ctx context.Context, method, url string, body io.Reader) (PlusResponse, error) {
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+func (c *PlusClient) Request(
+	ctx context.Context,
+	method string,
+	url url.URL,
+	params map[string]string,
+	headers map[string]string,
+	body io.Reader,
+) (PlusResponse, error) {
+	p := c.getFinalParams(params)
+	url.RawQuery = p.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, method, url.String(), body)
 	if err != nil {
 		return PlusResponse{}, nil
 	}
-	req.Header = c.header
+	req.Header = c.getFinalHeaders(headers)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -129,4 +121,30 @@ func (c *PlusClient) Request(ctx context.Context, method, url string, body io.Re
 	default:
 		return PlusResponse{}, fmt.Errorf("Error: status code %d", resp.StatusCode)
 	}
+}
+
+// build and get the final params used for the request
+func (c *PlusClient) getFinalParams(params map[string]string) url.Values {
+	p := url.Values{}
+	p.Set("os", "android")
+	p.Set("os_ver", "30")
+	p.Set("app_ver", "133")
+	p.Set("format", "json")
+	if c.secret != nil {
+		p.Set("secret", *c.secret)
+	}
+	for k, v := range params {
+		p.Set(k, v)
+	}
+	return p
+}
+
+func (c *PlusClient) getFinalHeaders(headers map[string]string) http.Header {
+	h := http.Header{}
+	h.Set("Accept", "*/*") // needed?
+	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+	for k, v := range headers {
+		h.Set(k, v)
+	}
+	return h
 }
