@@ -1,6 +1,6 @@
 # mangoplus
 
-Golang API wrapper for MangaPlus API.
+Golang API wrapper for MangaPlus API and MangaPlusCreators API.
 
 There's no API documentation so most of the implementation is just winging it.
 
@@ -28,7 +28,7 @@ import (
 
 func main() {
     // Create new client.
-    c := mangoplus.NewPlusClient()
+    c := mangoplus.NewPlusClient(mangoplus.DefaultOptions())
 
     // ID for Ghost Fixers.
     id := 100310
