@@ -117,15 +117,18 @@ func (c *PlusClient) Request(
 	case 200:
 		var res PlusResponse
 		err = json.NewDecoder(resp.Body).Decode(&res)
+		if err != nil {
+			return PlusResponse{}, fmt.Errorf("failed to decode MangaPlus response: %s", err.Error())
+		}
 		if res.Error != nil {
-			return PlusResponse{}, fmt.Errorf("Error: %s", res.Error.GetErrors())
+			return PlusResponse{}, fmt.Errorf("MangaPlus API error: %s", res.Error.GetErrors())
 		}
 		if res.Success == nil {
-			return PlusResponse{}, fmt.Errorf("Error: didn't receive neither an error or success response")
+			return PlusResponse{}, fmt.Errorf("MangaPlus API unexpected error (Error and Success fields empty)")
 		}
 		return res, nil
 	default:
-		return PlusResponse{}, fmt.Errorf("Error: status code %d", resp.StatusCode)
+		return PlusResponse{}, fmt.Errorf("MangaPlus API status code %d", resp.StatusCode)
 	}
 }
 

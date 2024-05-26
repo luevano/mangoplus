@@ -60,7 +60,7 @@ func (s *PageService) Get(id string, splitImages bool, imageQuality ImageQuality
 	}
 	mangaViewer := res.Success.MangaViewer
 	if mangaViewer == nil {
-		return nil, fmt.Errorf("Error: unexpected issue while getting pages for chapter id %s", id)
+		return nil, fmt.Errorf("unexpected error while getting pages for chapter id %q", id)
 	}
 
 	var pages []MangaPage

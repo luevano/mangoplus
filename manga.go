@@ -72,7 +72,7 @@ func (s *MangaService) Get(id string) (TitleDetailView, error) {
 	}
 	titleDetail := res.Success.TitleDetailView
 	if titleDetail == nil {
-		return TitleDetailView{}, fmt.Errorf("Error: no details for manga id %s", id)
+		return TitleDetailView{}, fmt.Errorf("no details for manga id %q", id)
 	}
 	return *titleDetail, nil
 }
@@ -90,5 +90,5 @@ func (s *MangaService) All() ([]AllTitlesGroup, error) {
 	if allTitles != nil {
 		return allTitles.AllTitlesGroup, nil
 	}
-	return nil, fmt.Errorf("Error: no titles found")
+	return nil, fmt.Errorf("no mangas found")
 }
