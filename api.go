@@ -75,7 +75,9 @@ type service struct {
 //
 // Options must be non-nil. Use DefaultOptions for defaults, all fields must be non-empty.
 func NewPlusClient(options Options) *PlusClient {
-	options.validate()
+	if err := options.validate(); err != nil {
+		panic(fmt.Errorf("Invalid MangoPlus client options: %s", err.Error()))
+	}
 
 	client := http.Client{}
 	plus := &PlusClient{client: &client, options: options}
