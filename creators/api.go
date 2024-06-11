@@ -73,7 +73,10 @@ type service struct {
 //
 // Options must be non-nil. Use DefaultOptions for defaults, all fields must be non-empty.
 func NewCreatorsClient(options Options) *CreatorsClient {
-	options.validate()
+	if err := options.validate(); err != nil {
+		panic(fmt.Errorf("Invalid MangoPlusCreators client options: %s", err.Error()))
+	}
+
 	client := http.Client{}
 	creators := &CreatorsClient{client: &client, options: options}
 
