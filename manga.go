@@ -21,7 +21,8 @@ type TitleDetailView struct {
 	Overview                 string             `json:"overview"`
 	NextTimeStamp            int                `json:"nextTimeStamp"`
 	ViewingPeriodDescription string             `json:"viewingPeriodDescription"`
-	ChapterListGroup         []ChapterListGroup `json:"chapterListGroup"`
+	ChapterListGroup         []ChapterListGroup `json:"chapterListGroup"` // old
+	ChapterListV2            []Chapter          `json:"chapterListV2"`
 	IsSimulReleased          bool               `json:"isSimulReleased"`
 	Rating                   Rating             `json:"rating"`
 	NumberOfViews            int                `json:"numberOfViews"`
