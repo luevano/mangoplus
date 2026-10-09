@@ -51,6 +51,8 @@ func (l Language) ToCode() string {
 		return "vi"
 	case Language_GERMAN:
 		return "de"
+	case Language_ITALIAN:
+		return "it"
 	default:
 		return "en"
 	}
@@ -107,6 +109,8 @@ func StringToLanguage(languageCode string) Language {
 		return Language_VIETNAMESE
 	case "de":
 		return Language_GERMAN
+	case "it":
+		return Language_ITALIAN
 	default:
 		return Language_ENGLISH
 	}
