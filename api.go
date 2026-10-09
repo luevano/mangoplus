@@ -17,12 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
-
-	// The API locks the session out for 10+ minutes after ~10 requests in a few seconds.
-	minRequestInterval = 500 * time.Millisecond
-)
+const BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
 
 // PlusClient: The MangaPlus client.
 type PlusClient struct {
@@ -127,7 +122,7 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 	return res.Success, nil
 }
 
-// waitForNextRequest: Sleeps until minRequestInterval has passed since the last request,
+// waitForNextRequest: Sleeps until Options.RequestInterval has passed since the last request,
 // or until ctx is done.
 func (c *PlusClient) waitForNextRequest(ctx context.Context) error {
 	c.lastRequestMu.Lock()
@@ -136,7 +131,7 @@ func (c *PlusClient) waitForNextRequest(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-time.After(time.Until(c.lastRequest.Add(minRequestInterval))):
+	case <-time.After(time.Until(c.lastRequest.Add(c.options.RequestInterval))):
 	}
 	c.lastRequest = time.Now()
 	return nil

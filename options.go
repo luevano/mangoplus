@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 // The API rejects requests that don't look like they come from the Android app.
@@ -30,6 +31,12 @@ type Options struct {
 	AndroidID  string
 	Viewer     Viewer
 
+	// RequestInterval: Minimum time between API requests.
+	//
+	// Warning: lowering or removing it (0) risks a lockout, the API is reported to block the device
+	// for 10+ minutes after ~10 requests in a few seconds.
+	RequestInterval time.Duration
+
 	// Secret: Device secret from the official app, gives access to the account's subscription.
 	//
 	// Optional, if empty a new device is registered (free chapters only).
@@ -49,6 +56,9 @@ func (o Options) validate() error {
 	if o.AndroidID == "" {
 		return fmt.Errorf("AndroidID is empty")
 	}
+	if o.RequestInterval < 0 {
+		return fmt.Errorf("RequestInterval is negative")
+	}
 	if o.Viewer != ViewerLegacy && o.Viewer != ViewerApp {
 		return fmt.Errorf("Viewer %q is not one of %q or %q", o.Viewer, ViewerLegacy, ViewerApp)
 	}
@@ -64,8 +74,10 @@ func DefaultOptions() Options {
 	return Options{
 		UserAgent:  defaultUserAgent,
 		OSVersion:  "36",
-		AppVersion: "265",
+		AppVersion: "250",
 		AndroidID:  android_id,
 		Viewer:     ViewerApp,
+
+		RequestInterval: 500 * time.Millisecond,
 	}
 }
