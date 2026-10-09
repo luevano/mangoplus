@@ -41,6 +41,11 @@ type Episode struct {
 
 // List: Get chapter list.
 func (s *ChapterService) List(id string, page int) (EpisodesDTO, error) {
+	return s.ListContext(context.Background(), id, page)
+}
+
+// ListContext: Same as List, with a context.
+func (s *ChapterService) ListContext(ctx context.Context, id string, page int) (EpisodesDTO, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(fmt.Sprintf(ChapterListPath, id))
 	p := map[string]string{
@@ -55,7 +60,7 @@ func (s *ChapterService) List(id string, page int) (EpisodesDTO, error) {
 		"X-Requested-With": "XMLHttpRequest",
 	}
 
-	res, err := s.client.Request(context.Background(), http.MethodGet, *u, p, h, nil)
+	res, err := s.client.Request(ctx, http.MethodGet, *u, p, h, nil)
 	if err != nil {
 		return EpisodesDTO{}, err
 	}

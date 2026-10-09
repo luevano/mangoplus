@@ -15,7 +15,12 @@ type UserService service
 
 // Profile: Get the profile of the account tied to the device secret.
 func (s *UserService) Profile() (*ProfileSettingsView, error) {
-	res, err := s.client.Request(context.Background(), http.MethodGet, ProfilePath, nil)
+	return s.ProfileContext(context.Background())
+}
+
+// ProfileContext: Same as Profile, with a context.
+func (s *UserService) ProfileContext(ctx context.Context) (*ProfileSettingsView, error) {
+	res, err := s.client.Request(ctx, http.MethodGet, ProfilePath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +35,12 @@ func (s *UserService) Profile() (*ProfileSettingsView, error) {
 //
 // A device without a subscription has the "basic" plan.
 func (s *UserService) Subscription() (*Subscription, error) {
-	res, err := s.client.Request(context.Background(), http.MethodGet, SubscriptionPath, nil)
+	return s.SubscriptionContext(context.Background())
+}
+
+// SubscriptionContext: Same as Subscription, with a context.
+func (s *UserService) SubscriptionContext(ctx context.Context) (*Subscription, error) {
+	res, err := s.client.Request(ctx, http.MethodGet, SubscriptionPath, nil)
 	if err != nil {
 		return nil, err
 	}

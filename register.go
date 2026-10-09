@@ -34,7 +34,7 @@ func (c *PlusClient) register(ctx context.Context) error {
 
 	res, err := c.request(ctx, http.MethodPut, RegisterPath, p)
 	if err != nil {
-		return fmt.Errorf("failed to register device: %s", err.Error())
+		return fmt.Errorf("failed to register device: %w", err)
 	}
 	secret := res.GetRegistrationData().GetDeviceSecret()
 	if secret == "" {

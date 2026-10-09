@@ -47,6 +47,11 @@ type Title struct {
 // The API itself defaults to the available language (usually english)
 // when the requested language doesn't exist.
 func (s *MangaService) List(query, language string, page int) (TitlesDTO, error) {
+	return s.ListContext(context.Background(), query, language, page)
+}
+
+// ListContext: Same as List, with a context.
+func (s *MangaService) ListContext(ctx context.Context, query, language string, page int) (TitlesDTO, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(MangaListPath)
 	p := map[string]string{
@@ -67,7 +72,7 @@ func (s *MangaService) List(query, language string, page int) (TitlesDTO, error)
 		"X-Requested-With": "XMLHttpRequest",
 	}
 
-	res, err := s.client.Request(context.Background(), http.MethodGet, *u, p, h, nil)
+	res, err := s.client.Request(ctx, http.MethodGet, *u, p, h, nil)
 	if err != nil {
 		return TitlesDTO{}, err
 	}

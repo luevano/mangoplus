@@ -18,9 +18,14 @@ type MangaService service
 
 // Get: Get manga details by ID.
 func (s *MangaService) Get(id string) (*TitleDetailView, error) {
+	return s.GetContext(context.Background(), id)
+}
+
+// GetContext: Same as Get, with a context.
+func (s *MangaService) GetContext(ctx context.Context, id string) (*TitleDetailView, error) {
 	p := map[string]string{"title_id": id}
 
-	res, err := s.client.Request(context.Background(), http.MethodGet, MangaPath, p)
+	res, err := s.client.Request(ctx, http.MethodGet, MangaPath, p)
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +38,11 @@ func (s *MangaService) Get(id string) (*TitleDetailView, error) {
 
 // All: Get list of all manga in the given language.
 func (s *MangaService) All(language Language) ([]*Title, error) {
+	return s.AllContext(context.Background(), language)
+}
+
+// AllContext: Same as All, with a context.
+func (s *MangaService) AllContext(ctx context.Context, language Language) ([]*Title, error) {
 	var titles []*Title
 	for _, mangaType := range allMangaTypes {
 		p := map[string]string{
@@ -41,7 +51,7 @@ func (s *MangaService) All(language Language) ([]*Title, error) {
 			"clang": language.APICode(),
 		}
 
-		res, err := s.client.Request(context.Background(), http.MethodGet, AllMangaPath, p)
+		res, err := s.client.Request(ctx, http.MethodGet, AllMangaPath, p)
 		if err != nil {
 			return nil, err
 		}

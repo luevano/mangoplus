@@ -15,6 +15,11 @@ type PageService service
 
 // Get: Get list of all chapter pages, using the endpoint set by Options.Viewer.
 func (s *PageService) Get(id string, splitImages bool, imageQuality ImageQuality) ([]*MangaPage, error) {
+	return s.GetContext(context.Background(), id, splitImages, imageQuality)
+}
+
+// GetContext: Same as Get, with a context.
+func (s *PageService) GetContext(ctx context.Context, id string, splitImages bool, imageQuality ImageQuality) ([]*MangaPage, error) {
 	p := map[string]string{
 		"chapter_id":  id,
 		"split":       yesNo(splitImages),
@@ -37,7 +42,7 @@ func (s *PageService) Get(id string, splitImages bool, imageQuality ImageQuality
 		p["subscription_reading"] = yesNo(subscription)
 	}
 
-	res, err := s.client.Request(context.Background(), http.MethodGet, path, p)
+	res, err := s.client.Request(ctx, http.MethodGet, path, p)
 	if err != nil {
 		return nil, err
 	}

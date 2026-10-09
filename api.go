@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	BaseAPI   = "https://jumpg-api.tokyo-cdn.com/api"
-	OriginURL = "https://mangaplus.shueisha.co.jp" // Not used
+	BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
 
 	// The API locks the session out for 10+ minutes after ~10 requests in a few seconds.
 	minRequestInterval = 500 * time.Millisecond
@@ -29,6 +28,8 @@ const (
 type PlusClient struct {
 	client  *http.Client
 	options Options
+	// BaseAPI, only changed in tests
+	baseAPI string
 
 	// Device secret sent on every request, from Options.Secret or registering a new device.
 	secret     string
@@ -63,7 +64,7 @@ func NewPlusClient(options Options) *PlusClient {
 	// The manga_viewer_v3 endpoint sets a cookie that is needed to get subscription-only images.
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{Jar: jar}
-	plus := &PlusClient{client: &client, options: options, secret: options.Secret}
+	plus := &PlusClient{client: &client, options: options, baseAPI: BaseAPI, secret: options.Secret}
 
 	plus.common.client = plus
 	// Reuse the common client for the other services
@@ -85,7 +86,7 @@ func (c *PlusClient) Request(ctx context.Context, method string, path string, pa
 }
 
 func (c *PlusClient) request(ctx context.Context, method string, path string, params map[string]string) (*SuccessResult, error) {
-	u, err := url.JoinPath(BaseAPI, path)
+	u, err := url.JoinPath(c.baseAPI, path)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +97,9 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 	req.URL.RawQuery = c.getFinalParams(params).Encode()
 	req.Header.Set("User-Agent", c.options.UserAgent)
 
-	c.waitForNextRequest()
+	if err := c.waitForNextRequest(ctx); err != nil {
+		return nil, err
+	}
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -124,13 +127,19 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 	return res.Success, nil
 }
 
-// waitForNextRequest: Sleeps until minRequestInterval has passed since the last request.
-func (c *PlusClient) waitForNextRequest() {
+// waitForNextRequest: Sleeps until minRequestInterval has passed since the last request,
+// or until ctx is done.
+func (c *PlusClient) waitForNextRequest(ctx context.Context) error {
 	c.lastRequestMu.Lock()
 	defer c.lastRequestMu.Unlock()
 
-	time.Sleep(time.Until(c.lastRequest.Add(minRequestInterval)))
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(time.Until(c.lastRequest.Add(minRequestInterval))):
+	}
 	c.lastRequest = time.Now()
+	return nil
 }
 
 // build and get the final params used for the request

@@ -24,6 +24,11 @@ type Page struct {
 
 // Get: Get list of all chapter pages.
 func (s *PageService) Get(id string) ([]Page, error) {
+	return s.GetContext(context.Background(), id)
+}
+
+// GetContext: Same as Get, with a context.
+func (s *PageService) GetContext(ctx context.Context, id string) ([]Page, error) {
 	u, _ := url.Parse(BaseAPI)
 	u = u.JoinPath(fmt.Sprintf(PageListPath, id))
 
@@ -34,7 +39,7 @@ func (s *PageService) Get(id string) ([]Page, error) {
 		"X-Requested-With": "XMLHttpRequest",
 	}
 
-	res, err := s.client.Request(context.Background(), http.MethodGet, *u, nil, h, nil)
+	res, err := s.client.Request(ctx, http.MethodGet, *u, nil, h, nil)
 	if err != nil {
 		return nil, err
 	}
