@@ -6,13 +6,34 @@ import (
 	"fmt"
 )
 
-const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+// The API rejects requests that don't look like they come from the Android app.
+const defaultUserAgent = "okhttp/4.12.0"
+
+// Viewer: Which endpoint and params are used to get chapter pages.
+type Viewer string
+
+const (
+	// ViewerApp: Same endpoint and params as the official app.
+	//
+	// The only one that sets the cookie needed to download subscription-only images.
+	ViewerApp Viewer = "app"
+	// ViewerLegacy: Old endpoint, without the reading params the app sends.
+	//
+	// Deprecated: Use ViewerApp, kept in case the old endpoint behaves differently.
+	ViewerLegacy Viewer = "legacy"
+)
 
 type Options struct {
 	UserAgent  string
 	OSVersion  string
 	AppVersion string
 	AndroidID  string
+	Viewer     Viewer
+
+	// Secret: Device secret from the official app, gives access to the account's subscription.
+	//
+	// Optional, if empty a new device is registered (free chapters only).
+	Secret string
 }
 
 func (o Options) validate() error {
@@ -28,6 +49,9 @@ func (o Options) validate() error {
 	if o.AndroidID == "" {
 		return fmt.Errorf("AndroidID is empty")
 	}
+	if o.Viewer != ViewerLegacy && o.Viewer != ViewerApp {
+		return fmt.Errorf("Viewer %q is not one of %q or %q", o.Viewer, ViewerLegacy, ViewerApp)
+	}
 	return nil
 }
 
@@ -39,8 +63,9 @@ func DefaultOptions() Options {
 	android_id := hex.EncodeToString(b)
 	return Options{
 		UserAgent:  defaultUserAgent,
-		OSVersion:  "30",
-		AppVersion: "133",
+		OSVersion:  "36",
+		AppVersion: "265",
 		AndroidID:  android_id,
+		Viewer:     ViewerApp,
 	}
 }

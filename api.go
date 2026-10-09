@@ -1,69 +1,48 @@
 // Package mangoplus provides an API wrapper for MangaPlus API.
 package mangoplus
 
+//go:generate go run github.com/bufbuild/buf/cmd/buf@v1.73.0 generate --template buf.gen.yaml
+
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
+	"strings"
+	"sync"
+	"time"
+
+	"google.golang.org/protobuf/proto"
 )
 
 const (
-	BaseAPI    = "https://jumpg-api.tokyo-cdn.com/api"
-	BaseWebAPI = "https://jumpg-webapi.tokyo-cdn.com/api" // Limited to what's available on the browser
-	OriginURL  = "https://mangaplus.shueisha.co.jp"       // Not used
+	BaseAPI   = "https://jumpg-api.tokyo-cdn.com/api"
+	OriginURL = "https://mangaplus.shueisha.co.jp" // Not used
+
+	// The API locks the session out for 10+ minutes after ~10 requests in a few seconds.
+	minRequestInterval = 500 * time.Millisecond
 )
-
-// PlusResponse: Generic MangaPlus API response type, most responses have this structure.
-type PlusResponse struct {
-	Success *SuccessResponse `json:"success"`
-	Error   *ErrorResponse   `json:"error"`
-}
-
-// ErrorResponse: Generic error response.
-type ErrorResponse struct {
-	// Not sure if English/Spanish are always the ones that
-	// appear on top, could be specific to me.
-	EnglishPopup *Popup   `json:"englishPopup"`
-	SpanishPopup *Popup   `json:"spanishPopup"`
-	Popups       *[]Popup `json:"popups"`
-}
-
-// SuccessResponse: Generic success response.
-type SuccessResponse struct {
-	IsFeaturedUpdated *bool              `json:"isFeaturedUpdated"`
-	RegisterationData *RegisterationData `json:"registerationData"`
-	TitleDetailView   *TitleDetailView   `json:"titleDetailView"`
-	MangaViewer       *MangaViewer       `json:"mangaViewer"`
-	AllTitlesViewV2   *AllTitlesViewV2   `json:"allTitlesViewV2"`
-	Languages         *Languages         `json:"languages"`
-}
-
-// Languages: Part of the response when requesting all of the manga.
-//
-// Not really used.
-type Languages struct {
-	DefaultUILanguage         Language `json:"defaultUiLanguage"`
-	DefaultContentLanguageOne Language `json:"defaultContentLanguageOne"`
-	AvailableLanguages        []struct {
-		Language    *Language `json:"language"`
-		TitlesCount int       `json:"titlesCount"`
-	} `json:"availableLanguages"`
-}
 
 // PlusClient: The MangaPlus client.
 type PlusClient struct {
 	client  *http.Client
-	secret  *string
 	options Options
+
+	// Device secret sent on every request, from Options.Secret or registering a new device.
+	secret     string
+	registerMu sync.Mutex
+
+	lastRequest   time.Time
+	lastRequestMu sync.Mutex
 
 	common service
 
 	// Services for MangaPlus API.
 	Manga *MangaService
 	Page  *PageService
+	User  *UserService
 }
 
 // service: Wrapper for PlusClient.
@@ -73,65 +52,85 @@ type service struct {
 
 // NewPlusClient: New MangaPlus client.
 //
-// Options must be non-nil. Use DefaultOptions for defaults, all fields must be non-empty.
+// Use DefaultOptions for defaults, all fields except Secret must be non-empty.
+//
+// If no Secret is provided, a new device is registered on the first request.
 func NewPlusClient(options Options) *PlusClient {
 	if err := options.validate(); err != nil {
 		panic(fmt.Errorf("Invalid MangoPlus client options: %s", err.Error()))
 	}
 
-	client := http.Client{}
-	plus := &PlusClient{client: &client, options: options}
-	plus.register()
+	// The manga_viewer_v3 endpoint sets a cookie that is needed to get subscription-only images.
+	jar, _ := cookiejar.New(nil)
+	client := http.Client{Jar: jar}
+	plus := &PlusClient{client: &client, options: options, secret: options.Secret}
 
 	plus.common.client = plus
 	// Reuse the common client for the other services
 	plus.Manga = (*MangaService)(&plus.common)
 	plus.Page = (*PageService)(&plus.common)
+	plus.User = (*UserService)(&plus.common)
 
 	return plus
 }
 
-// Request: Sends a request to the MangaPlus API and decodes into a PlusResponse.
-func (c *PlusClient) Request(
-	ctx context.Context,
-	method string,
-	url url.URL,
-	params map[string]string,
-	headers map[string]string,
-	body io.Reader,
-) (PlusResponse, error) {
-	p := c.getFinalParams(params)
-	url.RawQuery = p.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, method, url.String(), body)
-	if err != nil {
-		return PlusResponse{}, nil
+// Request: Sends a request to the MangaPlus API and decodes the protobuf response.
+//
+// path is relative to BaseAPI, all params are sent as query params as the API doesn't use bodies.
+func (c *PlusClient) Request(ctx context.Context, method string, path string, params map[string]string) (*SuccessResult, error) {
+	if err := c.ensureRegistered(ctx); err != nil {
+		return nil, err
 	}
-	req.Header = c.getFinalHeaders(headers)
+	return c.request(ctx, method, path, params)
+}
 
+func (c *PlusClient) request(ctx context.Context, method string, path string, params map[string]string) (*SuccessResult, error) {
+	u, err := url.JoinPath(BaseAPI, path)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.URL.RawQuery = c.getFinalParams(params).Encode()
+	req.Header.Set("User-Agent", c.options.UserAgent)
+
+	c.waitForNextRequest()
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return PlusResponse{}, nil
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	switch resp.StatusCode {
-	case 200:
-		var res PlusResponse
-		err = json.NewDecoder(resp.Body).Decode(&res)
-		if err != nil {
-			return PlusResponse{}, fmt.Errorf("failed to decode MangaPlus response: %s", err.Error())
-		}
-		if res.Error != nil {
-			return PlusResponse{}, fmt.Errorf("MangaPlus API error: %s", res.Error.GetErrors())
-		}
-		if res.Success == nil {
-			return PlusResponse{}, fmt.Errorf("MangaPlus API unexpected error (Error and Success fields empty)")
-		}
-		return res, nil
-	default:
-		return PlusResponse{}, fmt.Errorf("MangaPlus API status code %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("MangaPlus API status code %d", resp.StatusCode)
 	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var res Response
+	if err := proto.Unmarshal(body, &res); err != nil {
+		return nil, fmt.Errorf("failed to decode MangaPlus response: %s", err.Error())
+	}
+	if res.Error != nil {
+		return nil, fmt.Errorf("MangaPlus API error: %s", res.Error.message())
+	}
+	if res.Success == nil {
+		return nil, fmt.Errorf("MangaPlus API unexpected error (Error and Success fields empty)")
+	}
+	return res.Success, nil
+}
+
+// waitForNextRequest: Sleeps until minRequestInterval has passed since the last request.
+func (c *PlusClient) waitForNextRequest() {
+	c.lastRequestMu.Lock()
+	defer c.lastRequestMu.Unlock()
+
+	time.Sleep(time.Until(c.lastRequest.Add(minRequestInterval)))
+	c.lastRequest = time.Now()
 }
 
 // build and get the final params used for the request
@@ -140,9 +139,8 @@ func (c *PlusClient) getFinalParams(params map[string]string) url.Values {
 	p.Set("os", "android")
 	p.Set("os_ver", c.options.OSVersion)
 	p.Set("app_ver", c.options.AppVersion)
-	p.Set("format", "json")
-	if c.secret != nil {
-		p.Set("secret", *c.secret)
+	if c.secret != "" {
+		p.Set("secret", c.secret)
 	}
 	for k, v := range params {
 		p.Set(k, v)
@@ -150,12 +148,22 @@ func (c *PlusClient) getFinalParams(params map[string]string) url.Values {
 	return p
 }
 
-func (c *PlusClient) getFinalHeaders(headers map[string]string) http.Header {
-	h := http.Header{}
-	h.Set("Accept", "*/*") // needed?
-	h.Set("User-Agent", c.options.UserAgent)
-	for k, v := range headers {
-		h.Set(k, v)
+// ImageHeaders: Headers needed to download page images.
+//
+// Includes the cookie set by the last manga_viewer_v3 request, if any.
+func (c *PlusClient) ImageHeaders(imageURL string) map[string]string {
+	headers := map[string]string{"User-Agent": c.options.UserAgent}
+
+	u, err := url.Parse(imageURL)
+	if err != nil {
+		return headers
 	}
-	return h
+	var cookies []string
+	for _, cookie := range c.client.Jar.Cookies(u) {
+		cookies = append(cookies, cookie.String())
+	}
+	if len(cookies) != 0 {
+		headers["Cookie"] = strings.Join(cookies, "; ")
+	}
+	return headers
 }

@@ -6,20 +6,25 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const RegisterPath = "register"
 
-type RegisterationData struct {
-	DeviceSecret string `json:"deviceSecret"`
+// ensureRegistered: Registers a new device if there is no secret yet.
+func (c *PlusClient) ensureRegistered(ctx context.Context) error {
+	c.registerMu.Lock()
+	defer c.registerMu.Unlock()
+
+	if c.secret != "" {
+		return nil
+	}
+	return c.register(ctx)
 }
 
-func (c *PlusClient) register() error {
-	u, _ := url.Parse(BaseAPI)
-	u = u.JoinPath(RegisterPath)
-
-	// TODO: investigate if the extra part of the key is required
+// register: Registers a new device, same as the official app on a fresh install.
+//
+// The resulting secret only has access to free chapters.
+func (c *PlusClient) register(ctx context.Context) error {
 	deviceToken := md5Hex(c.options.AndroidID)
 	securityKey := md5Hex(deviceToken + "4Kin9vGg")
 	p := map[string]string{
@@ -27,18 +32,16 @@ func (c *PlusClient) register() error {
 		"security_key": securityKey,
 	}
 
-	res, err := c.Request(context.Background(), http.MethodPut, *u, p, nil, nil)
+	res, err := c.request(ctx, http.MethodPut, RegisterPath, p)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to register device: %s", err.Error())
 	}
-	if res.Success.RegisterationData == nil {
-		return fmt.Errorf("Unexpected error: register data response is empty")
-	}
-	if res.Success.RegisterationData.DeviceSecret == "" {
+	secret := res.GetRegistrationData().GetDeviceSecret()
+	if secret == "" {
 		return fmt.Errorf("Unexpected error: device secret response is empty")
 	}
 
-	c.secret = &res.Success.RegisterationData.DeviceSecret
+	c.secret = secret
 	return nil
 }
 

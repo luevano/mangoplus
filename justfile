@@ -14,3 +14,7 @@ update:
 # publish
 publish tag:
     GOPROXY=proxy.golang.org go list -m {{go-mod}}@{{tag}}
+
+# generate protobuf code
+generate:
+    go generate ./...

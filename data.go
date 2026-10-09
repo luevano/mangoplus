@@ -8,7 +8,6 @@ const (
 	ImageQualitySuperHigh ImageQuality = "super_high"
 )
 
-
 // StringToImageQuality: Get the corresponding ImageQuality given a string.
 //
 // Defaults to ImageQualitySuperHigh.
@@ -25,29 +24,6 @@ func StringToImageQuality(str string) ImageQuality {
 	}
 }
 
-type Rating string
-
-const (
-	RatingAllAges  Rating = "ALLAGES"
-	RatingTeen     Rating = "TEEN"
-	RatingTeenPlus Rating = "TEENPLUS"
-	RatingMature   Rating = "MATURE"
-)
-
-type Language string
-
-const (
-	LanguageEnglish      Language = "ENGLISH"
-	LanguageSpanish      Language = "SPANISH"
-	LanguageFrench       Language = "FRENCH"
-	LanguageIndonesian   Language = "INDONESIAN"
-	LanguagePortugueseBR Language = "PORTUGUESE_BR"
-	LanguageRussian      Language = "RUSSIAN"
-	LanguageThai         Language = "THAI"
-	LanguageVietnamese   Language = "VIETNAMESE"
-	LanguageGerman       Language = "GERMAN"
-)
-
 // ToCode: Get the corresponding Language code.
 //
 // Defaults to "en".
@@ -55,116 +31,113 @@ const (
 // Using MangaDex as reference: https://api.mangadex.org/docs/3-enumerations/#language-codes--localization
 func (l Language) ToCode() string {
 	switch l {
-	case LanguageEnglish:
+	case Language_ENGLISH:
 		return "en"
-	case LanguageSpanish:
+	case Language_SPANISH:
 		// Could also return "es-la", but "es" only should be more common
 		return "es"
-	case LanguageFrench:
+	case Language_FRENCH:
 		return "fr"
-	case LanguageIndonesian:
+	case Language_INDONESIAN:
 		return "id"
-	case LanguagePortugueseBR:
+	case Language_PORTUGUESE_BR:
 		// Same, could be "pt-br"
 		return "pt"
-	case LanguageRussian:
+	case Language_RUSSIAN:
 		return "ru"
-	case LanguageThai:
+	case Language_THAI:
 		return "th"
-	case LanguageVietnamese:
+	case Language_VIETNAMESE:
 		return "vi"
-	case LanguageGerman:
+	case Language_GERMAN:
 		return "de"
 	default:
 		return "en"
 	}
 }
 
+// APICode: Get the language code used in the API params.
+//
+// Defaults to "eng".
+func (l Language) APICode() string {
+	switch l {
+	case Language_SPANISH:
+		return "esp"
+	case Language_FRENCH:
+		return "fra"
+	case Language_INDONESIAN:
+		return "ind"
+	case Language_PORTUGUESE_BR:
+		return "ptb"
+	case Language_RUSSIAN:
+		return "rus"
+	case Language_THAI:
+		return "tha"
+	case Language_VIETNAMESE:
+		return "vie"
+	case Language_GERMAN:
+		return "deu"
+	default:
+		return "eng"
+	}
+}
+
 // StringToLanguage: Get the corresponding Language type from a Language code.
 //
-// Defaults to LanguageEnglish.
+// Defaults to Language_ENGLISH.
 //
 // Using MangaDex as reference: https://api.mangadex.org/docs/3-enumerations/#language-codes--localization
 func StringToLanguage(languageCode string) Language {
 	switch languageCode {
 	case "en":
-		return LanguageEnglish
+		return Language_ENGLISH
 	case "es", "es-la":
-		return LanguageSpanish
+		return Language_SPANISH
 	case "fr":
-		return LanguageFrench
+		return Language_FRENCH
 	case "id":
-		return LanguageIndonesian
+		return Language_INDONESIAN
 	case "pt", "pt-br":
-		return LanguagePortugueseBR
+		return Language_PORTUGUESE_BR
 	case "ru":
-		return LanguageRussian
+		return Language_RUSSIAN
 	case "th":
-		return LanguageThai
+		return Language_THAI
 	case "vi":
-		return LanguageVietnamese
+		return Language_VIETNAMESE
 	case "de":
-		return LanguageGerman
+		return Language_GERMAN
 	default:
-		return LanguageEnglish
+		return Language_ENGLISH
 	}
 }
 
-type ReleaseSchedule string
-
-const (
-	ReleaseScheduleDisabled   ReleaseSchedule = "DISABLED"
-	ReleaseScheduleEveryday   ReleaseSchedule = "EVERYDAY"
-	ReleaseScheduleWeekly     ReleaseSchedule = "WEEKLY"
-	ReleaseScheduleBiweekly   ReleaseSchedule = "BIWEEKLY"
-	ReleaseScheduleMonthly    ReleaseSchedule = "MONTHLY"
-	ReleaseScheduleBiMonthly  ReleaseSchedule = "BIMONTHLY"
-	ReleaseScheduleTriMonthly ReleaseSchedule = "TRIMONTHLY"
-	ReleaseScheduleOther      ReleaseSchedule = "OTHER"
-	ReleaseScheduleCompleted  ReleaseSchedule = "COMPLETED"
-)
-
-type LabelCode string
-
-const (
-	LabelCodeCreators LabelCode = "CREATORS"
-	LabelCodeGiga     LabelCode = "GIGA"
-	LabelCodeJPlus    LabelCode = "J_PLUS"
-	LabelCodeOthers   LabelCode = "OTHERS"
-	LabelCodeRevival  LabelCode = "REVIVAL"
-	LabelCodeSKJ      LabelCode = "SKJ"
-	LabelCodeSQ       LabelCode = "SQ"
-	LabelCodeTYJ      LabelCode = "TYJ"
-	LabelCodeVJ       LabelCode = "VJ"
-	LabelCodeYJ       LabelCode = "YJ"
-	LabelCodeWSJ      LabelCode = "WSJ"
-)
-
-func (l Label) Long() string {
-	switch l.Label {
-	case LabelCodeCreators:
+// Long: Get the full name of the magazine.
+func (l LabelCode) Long() string {
+	switch l {
+	case LabelCode_CREATORS:
 		return "MANGA Plus Creators"
-	case LabelCodeGiga:
+	case LabelCode_GIGA:
 		return "Shounen Jump Giga"
-	case LabelCodeJPlus:
+	case LabelCode_J_PLUS:
 		return "Shounen Jump+"
-	case LabelCodeOthers:
+	case LabelCode_OTHERS:
 		return "Others"
-	case LabelCodeRevival:
+	case LabelCode_REVIVAL:
 		return "Revival"
-	case LabelCodeSKJ:
+	case LabelCode_SKJ:
 		return "Saikyou Jump"
-	case LabelCodeSQ:
+	case LabelCode_SQ:
 		return "Jump SQ."
-	case LabelCodeTYJ:
+	case LabelCode_TYJ:
 		return "Tonari no Young Jump"
-	case LabelCodeVJ:
+	case LabelCode_VJ:
 		return "V Jump"
-	case LabelCodeYJ:
+	case LabelCode_YJ:
 		return "Weekly Young Jump"
-	case LabelCodeWSJ:
+	case LabelCode_WJ:
 		return "Weekly Shounen Jump"
 	default:
-		return ""
+		return l.String()
 	}
 }

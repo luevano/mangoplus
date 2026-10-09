@@ -1,35 +1,21 @@
 package mangoplus
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-type Popup struct {
-	Subject      string `json:"subject"`
-	Body         string `json:"body"`
-	CancelButton struct {
-		Text string `json:"text"`
-	} `json:"cancelButton"`
-	Language *Language `json:"language"`
-}
-
-// TODO: handle one specific language instead of the first in the list
-//
-// GetErrors: Get the errors for this particular request.
-func (error *ErrorResponse) GetErrors() string {
-	var errors strings.Builder
-	var errorPopup Popup
-	if error.EnglishPopup != nil {
-		errorPopup = *error.EnglishPopup
-	} else if error.SpanishPopup != nil {
-		errorPopup = *error.SpanishPopup
-	} else {
-		for _, err := range *error.Popups {
-			errorPopup = err
-			break
-		}
+// message: Get the error message, preferring the english popup.
+func (e *ErrorResult) message() string {
+	popup := e.EnglishPopup
+	if popup == nil {
+		popup = e.SpanishPopup
 	}
-	errors.WriteString(fmt.Sprintf("%s: %s", errorPopup.Subject, errorPopup.Body))
-	return errors.String()
+	if popup == nil && len(e.Popups) != 0 {
+		popup = e.Popups[0]
+	}
+	if popup != nil {
+		return fmt.Sprintf("%s: %s", popup.Subject, popup.Body)
+	}
+	if e.DebugInfo != "" {
+		return e.DebugInfo
+	}
+	return fmt.Sprintf("action %s", e.Action)
 }

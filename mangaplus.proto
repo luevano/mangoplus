@@ -1,0 +1,257 @@
+// MangaPlus app API schema, only the parts used by this package.
+//
+// Field numbers come from the official Android app (v2.3.0, app_ver 250) as documented by
+// frank_mangaplus (https://github.com/akitaonrails/frank_mangaplus, MIT), and were checked
+// against live responses. Regenerate the Go code with `go generate`.
+
+syntax = "proto3";
+
+package mangoplus;
+
+option go_package = "github.com/luevano/mangoplus";
+
+// Response: Top-level response of every endpoint.
+message Response {
+  SuccessResult success = 1;
+  ErrorResult error = 2;
+}
+
+// SuccessResult: Only one of the fields is set, depending on the endpoint.
+message SuccessResult {
+  RegistrationData registration_data = 2;
+  TitleDetailView title_detail_view = 8;
+  MangaViewer manga_viewer = 10;
+  ProfileSettingsView profile_settings_view = 13;
+  SearchView search_view = 35;
+  SubscriptionView subscription_view = 36;
+}
+
+message ErrorResult {
+  ErrorAction action = 1;
+  Popup english_popup = 2;
+  Popup spanish_popup = 3;
+  string debug_info = 4;
+  repeated Popup popups = 5;
+}
+
+enum ErrorAction {
+  DEFAULT = 0;
+  UNAUTHORIZED = 1;
+  MAINTENANCE = 2;
+  GEOIP_BLOCKING = 3;
+}
+
+message Popup {
+  string subject = 1;
+  string body = 2;
+  Language language = 6;
+}
+
+// RegistrationData: Response of the "register" endpoint.
+message RegistrationData {
+  string device_secret = 1;
+}
+
+// SearchView: Response of the "title_list/all_v3" endpoint.
+message SearchView {
+  repeated AllTitlesGroup all_titles_group = 3;
+}
+
+// AllTitlesGroup: The same title in all of its available languages.
+message AllTitlesGroup {
+  string the_title = 1;
+  repeated Title titles = 2;
+  Label label = 4;
+  int64 next_chapter_start_timestamp = 5;
+}
+
+message Title {
+  int32 title_id = 1;
+  string name = 2;
+  string author = 3;
+  string portrait_image_url = 4;
+  string landscape_image_url = 5;
+  int32 view_count = 6;
+  Language language = 7;
+  TitleUpdateStatus title_update_status = 8;
+  string favorite_image_url = 9;
+}
+
+// TitleDetailView: Response of the "title_detailV3" endpoint.
+message TitleDetailView {
+  Title title = 1;
+  string title_image_url = 2;
+  string overview = 3;
+  string background_image_url = 4;
+  int64 next_time_stamp = 5;
+  string viewing_period_description = 7;
+  string non_appearance_info = 8;
+  bool is_simul_released = 14;
+  bool is_subscribed = 15;
+  Rating rating = 16;
+  bool chapters_descending = 17;
+  int32 number_of_views = 18;
+  string region_code = 30;
+  TitleLabels title_labels = 32;
+  Subscription user_subscription = 33;
+  Label label = 34;
+  bool is_first_time_free = 35;
+  repeated Chapter chapter_list_v2 = 38;
+}
+
+message TitleLabels {
+  ReleaseSchedule release_schedule = 1;
+  bool is_simulpub = 2;
+  string plan_type = 3;
+}
+
+message Label {
+  LabelCode label = 1;
+  string description = 2;
+}
+
+message Chapter {
+  int32 title_id = 1;
+  int32 chapter_id = 2;
+  string name = 3;
+  string sub_title = 4;
+  string thumbnail_url = 5;
+  int64 start_time_stamp = 6;
+  int64 end_time_stamp = 7;
+  bool already_viewed = 8;
+  bool is_vertical_only = 9;
+  int64 chapter_ticket_end_time = 10;
+  bool viewed_for_free = 11;
+  bool is_horizontal_only = 12;
+  int32 view_count = 13;
+  int32 comment_count = 14;
+  bool is_updated = 15;
+  // Informational only, the API doesn't always enforce it.
+  ChapterType chapter_type = 16;
+}
+
+// MangaViewer: Response of the "manga_viewer" and "manga_viewer_v3" endpoints.
+message MangaViewer {
+  repeated Page pages = 1;
+  int32 chapter_id = 2;
+  repeated Chapter chapters = 3;
+  string title_name = 5;
+  string chapter_name = 6;
+  int32 number_of_comments = 7;
+  bool is_vertical_only = 8;
+  int32 title_id = 9;
+  bool start_from_right = 10;
+  string region_code = 11;
+  bool is_horizontal_only = 12;
+  Subscription user_subscription = 13;
+  string plan_type = 14;
+  // Not a Language, but a code like "eng".
+  string title_language = 15;
+}
+
+// Page: Only manga pages are used, the rest (banners, ads, last page) are left out.
+message Page {
+  MangaPage manga_page = 1;
+}
+
+message MangaPage {
+  string image_url = 1;
+  int32 width = 2;
+  int32 height = 3;
+  PageType type = 4;
+  string encryption_key = 5;
+}
+
+// ProfileSettingsView: Response of the "profile" endpoint.
+message ProfileSettingsView {
+  string user_name = 2;
+}
+
+// SubscriptionView: Response of the "subscription" endpoint.
+message SubscriptionView {
+  Subscription user_subscription = 1;
+}
+
+message Subscription {
+  // One of "basic", "standard" or "deluxe".
+  string plan_type = 1;
+  int64 next_payment_date = 2;
+  bool is_free_trial = 3;
+  bool is_pending_downgrade = 4;
+  bool is_first_time_user = 5;
+}
+
+enum Language {
+  ENGLISH = 0;
+  SPANISH = 1;
+  FRENCH = 2;
+  INDONESIAN = 3;
+  PORTUGUESE_BR = 4;
+  RUSSIAN = 5;
+  THAI = 6;
+  GERMAN = 7;
+  ITALIAN = 8;
+  VIETNAMESE = 9;
+}
+
+enum Rating {
+  ALLAGE = 0;
+  TEEN = 1;
+  TEENPLUS = 2;
+  MATURE = 3;
+}
+
+enum ReleaseSchedule {
+  DISABLED = 0;
+  EVERYDAY = 1;
+  WEEKLY = 2;
+  BIWEEKLY = 3;
+  MONTHLY = 4;
+  BIMONTHLY = 5;
+  TRIMONTHLY = 6;
+  OTHER = 7;
+  COMPLETED = 8;
+  ONE_SHOT = 9;
+  HIATUS = 10;
+}
+
+enum LabelCode {
+  WJ = 0;
+  SQ = 1;
+  VJ = 2;
+  YJ = 3;
+  J_PLUS = 4;
+  REVIVAL = 5;
+  CREATORS = 6;
+  MEE = 7;
+  TYJ = 8;
+  OTHERS = 9;
+  SKJ = 10;
+  GIGA = 11;
+  UJ = 12;
+  DX = 13;
+}
+
+enum TitleUpdateStatus {
+  NONE = 0;
+  NEW = 1;
+  UP = 2;
+  REEDITION = 3;
+  CREATORS_STATUS = 4;
+  OUR_PICKS = 5;
+}
+
+enum ChapterType {
+  FREE = 0;
+  FREE_FOR_FIRST_TIME = 1;
+  STANDARD = 2;
+  DELUXE = 3;
+  LOCKED_AFTER_FREE_READ = 4;
+}
+
+enum PageType {
+  SINGLE = 0;
+  LEFT = 1;
+  RIGHT = 2;
+  DOUBLE = 3;
+}
