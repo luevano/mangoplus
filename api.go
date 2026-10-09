@@ -5,6 +5,7 @@ package mangoplus
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -104,6 +105,11 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 	}
 	resp, err := c.client.Do(req)
 	if err != nil {
+		// net/http puts the full url in its errors, query included
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			urlErr.URL = redactURL(urlErr.URL)
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	defer resp.Body.Close()
@@ -177,4 +183,25 @@ func (c *PlusClient) ImageHeaders(imageURL string) map[string]string {
 		headers["Cookie"] = strings.Join(cookies, "; ")
 	}
 	return headers
+}
+
+// params that identify the device and give access to the account
+var sensitiveParams = []string{"secret", "device_token", "security_key"}
+
+// redactURL: Hides the sensitive params of the url so it can be shown in errors.
+func redactURL(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		// can't tell what's in it, drop the query altogether
+		before, _, _ := strings.Cut(rawURL, "?")
+		return before
+	}
+	query := u.Query()
+	for _, param := range sensitiveParams {
+		if query.Has(param) {
+			query.Set(param, "REDACTED")
+		}
+	}
+	u.RawQuery = query.Encode()
+	return u.String()
 }

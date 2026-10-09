@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"google.golang.org/protobuf/proto"
@@ -102,5 +103,50 @@ func TestInvalidOptions(t *testing.T) {
 	o.UserAgent = ""
 	if _, err := NewPlusClient(o); err == nil || err.Error() != "mangoplus: invalid options: UserAgent is empty" {
 		t.Errorf("wanted an invalid options error, got %v", err)
+	}
+}
+
+// newClosedTestClient: Client pointing to a closed local server, so requests fail at the network level.
+func newClosedTestClient(t *testing.T, options Options) *PlusClient {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	server.Close()
+	c, err := NewPlusClient(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.baseAPI = server.URL
+	return c
+}
+
+func TestSecretsRedactedFromErrors(t *testing.T) {
+	o := DefaultOptions()
+	o.Secret = "paid-secret"
+	o.FreeSecret = "free-secret"
+	_, err := newClosedTestClient(t, o).Manga.Get("1")
+	if err == nil || strings.Contains(err.Error(), "paid-secret") || !strings.Contains(err.Error(), "secret=REDACTED") {
+		t.Errorf("secret should be redacted, got %v", err)
+	}
+
+	// registering sends the device token and security key
+	o = DefaultOptions()
+	deviceToken := md5Hex(o.AndroidID)
+	_, err = newClosedTestClient(t, o).Manga.Get("1")
+	if err == nil || strings.Contains(err.Error(), deviceToken) || !strings.Contains(err.Error(), "device_token=REDACTED") {
+		t.Errorf("device token should be redacted, got %v", err)
+	}
+}
+
+func TestRedactURL(t *testing.T) {
+	tests := map[string]string{
+		"https://host/api/x?secret=s&title_id=1":   "https://host/api/x?secret=REDACTED&title_id=1",
+		"https://host/api/register?device_token=t": "https://host/api/register?device_token=REDACTED",
+		"https://host/api/x?title_id=1":            "https://host/api/x?title_id=1",
+		"https://host/%zz?secret=s":                "https://host/%zz",
+	}
+	for in, want := range tests {
+		if got := redactURL(in); got != want {
+			t.Errorf("redactURL(%q): wanted %q, got %q", in, want, got)
+		}
 	}
 }
