@@ -39,8 +39,16 @@ type Options struct {
 
 	// Secret: Device secret from the official app, gives access to the account's subscription.
 	//
-	// Optional, if empty a new device is registered (free chapters only).
+	// Optional, takes precedence over FreeSecret.
 	Secret string
+
+	// FreeSecret: Device secret of a previously registered free device (free chapters only).
+	//
+	// Optional, if both secrets are empty a new device is registered on the first request.
+	FreeSecret string
+
+	// OnRegister: Called with the secret of a newly registered device, e.g. to save it as FreeSecret.
+	OnRegister func(secret string)
 }
 
 func (o Options) validate() error {
@@ -74,7 +82,7 @@ func DefaultOptions() Options {
 	return Options{
 		UserAgent:  defaultUserAgent,
 		OSVersion:  "36",
-		AppVersion: "250",
+		AppVersion: "265",
 		AndroidID:  android_id,
 		Viewer:     ViewerApp,
 

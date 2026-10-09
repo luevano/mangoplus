@@ -26,7 +26,7 @@ type PlusClient struct {
 	// BaseAPI, only changed in tests
 	baseAPI string
 
-	// Device secret sent on every request, from Options.Secret or registering a new device.
+	// Device secret sent on every request, from Options.Secret, Options.FreeSecret or registering a new device.
 	secret     string
 	registerMu sync.Mutex
 
@@ -48,9 +48,9 @@ type service struct {
 
 // NewPlusClient: New MangaPlus client.
 //
-// Use DefaultOptions for defaults, all fields except Secret must be non-empty.
+// Use DefaultOptions for defaults, all fields except the secrets and OnRegister must be non-empty.
 //
-// If no Secret is provided, a new device is registered on the first request.
+// If no secret is provided, a new device is registered on the first request.
 func NewPlusClient(options Options) *PlusClient {
 	if err := options.validate(); err != nil {
 		panic(fmt.Errorf("Invalid MangoPlus client options: %s", err.Error()))
@@ -59,7 +59,11 @@ func NewPlusClient(options Options) *PlusClient {
 	// The manga_viewer_v3 endpoint sets a cookie that is needed to get subscription-only images.
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{Jar: jar}
-	plus := &PlusClient{client: &client, options: options, baseAPI: BaseAPI, secret: options.Secret}
+	secret := options.Secret
+	if secret == "" {
+		secret = options.FreeSecret
+	}
+	plus := &PlusClient{client: &client, options: options, baseAPI: BaseAPI, secret: secret}
 
 	plus.common.client = plus
 	// Reuse the common client for the other services

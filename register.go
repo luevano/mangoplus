@@ -42,6 +42,9 @@ func (c *PlusClient) register(ctx context.Context) error {
 	}
 
 	c.secret = secret
+	if c.options.OnRegister != nil {
+		c.options.OnRegister(secret)
+	}
 	return nil
 }
 

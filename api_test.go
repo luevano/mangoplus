@@ -85,6 +85,47 @@ func TestSecretSkipsRegister(t *testing.T) {
 	}
 }
 
+func TestOnRegister(t *testing.T) {
+	var registered string
+	o := DefaultOptions()
+	o.OnRegister = func(secret string) { registered = secret }
+	c, _ := newTestClient(t, o)
+
+	if _, err := c.User.Profile(); err != nil {
+		t.Fatal(err)
+	}
+	if registered != testSecret {
+		t.Errorf("OnRegister should get the new secret, got %q", registered)
+	}
+}
+
+func TestFreeSecret(t *testing.T) {
+	o := DefaultOptions()
+	o.FreeSecret = "free-secret"
+	o.OnRegister = func(string) { t.Error("shouldn't register a new device") }
+	c, lastQuery := newTestClient(t, o)
+
+	if _, err := c.Page.Get("1020497", false, ImageQualityHigh); err != nil {
+		t.Fatal(err)
+	}
+	if got := lastQuery.Get("secret"); got != "free-secret" {
+		t.Errorf("wanted the free secret, got %q", got)
+	}
+	if got := lastQuery.Get("subscription_reading"); got != "no" {
+		t.Errorf("free secret shouldn't use the subscription, got subscription_reading %q", got)
+	}
+
+	// the paid one takes precedence
+	o.Secret = "paid-secret"
+	c, lastQuery = newTestClient(t, o)
+	if _, err := c.User.Profile(); err != nil {
+		t.Fatal(err)
+	}
+	if got := lastQuery.Get("secret"); got != "paid-secret" {
+		t.Errorf("wanted the paid secret, got %q", got)
+	}
+}
+
 func TestMangaGet(t *testing.T) {
 	c, lastQuery := newTestClient(t, DefaultOptions())
 
