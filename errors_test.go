@@ -137,6 +137,16 @@ func TestSecretsRedactedFromErrors(t *testing.T) {
 	}
 }
 
+func TestUnsafeShowSecret(t *testing.T) {
+	t.Setenv(UnsafeShowSecretEnv, "1")
+	o := DefaultOptions()
+	o.Secret = "paid-secret"
+	_, err := newClosedTestClient(t, o).Manga.Get("1")
+	if err == nil || !strings.Contains(err.Error(), "secret=paid-secret") {
+		t.Errorf("secret should be shown with %s=1, got %v", UnsafeShowSecretEnv, err)
+	}
+}
+
 func TestRedactURL(t *testing.T) {
 	tests := map[string]string{
 		"https://host/api/x?secret=s&title_id=1":   "https://host/api/x?secret=REDACTED&title_id=1",

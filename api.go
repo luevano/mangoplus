@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -107,7 +108,7 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 	if err != nil {
 		// net/http puts the full url in its errors, query included
 		var urlErr *url.Error
-		if errors.As(err, &urlErr) {
+		if errors.As(err, &urlErr) && os.Getenv(UnsafeShowSecretEnv) != "1" {
 			urlErr.URL = redactURL(urlErr.URL)
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -184,6 +185,10 @@ func (c *PlusClient) ImageHeaders(imageURL string) map[string]string {
 	}
 	return headers
 }
+
+// UnsafeShowSecretEnv: Set it to "1" to show the secret and registration keys in errors instead of
+// "REDACTED". Unsafe, anyone who sees the error can use the account.
+const UnsafeShowSecretEnv = "MANGOPLUS_UNSAFE_SHOW_SECRET"
 
 // params that identify the device and give access to the account
 var sensitiveParams = []string{"secret", "device_token", "security_key"}

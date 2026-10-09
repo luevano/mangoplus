@@ -90,6 +90,8 @@ access the pages request fails with "Invalid user access(11301)".
 
 ## When it stops working
 
+- Errors show the secret as `REDACTED`. To see the one actually being sent, run with
+  `MANGOPLUS_UNSAFE_SHOW_SECRET=1` (unsafe, don't share that output).
 - Using "Restore Subscription" in the app (on any device) invalidates the old secret, get it again.
 - A lapsed renewal downgrades the account to `basic` without any error, subscription chapters just
   start failing. Check the plan with `User.Subscription()`.

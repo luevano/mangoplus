@@ -47,6 +47,10 @@ Errors can be checked with `errors.Is` against `ErrNotFound`, `ErrRateLimited`, 
 `ErrSubscriptionRequired` and `ErrRegionBlocked`, or inspected with `errors.As` as `*HTTPError` (non-200
 status) or `*ServerError` (error result from the API, with its `Code`).
 
+The device secret and registration keys show as `REDACTED` in errors. To see them, e.g. while
+debugging the API, set `MANGOPLUS_UNSAFE_SHOW_SECRET=1`. Unsafe: anyone who sees the error can use your
+account, don't share that output.
+
 ### Free device
 
 Without a secret, a new free device is registered on the first request. To reuse it in later runs
