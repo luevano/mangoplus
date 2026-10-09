@@ -7,7 +7,15 @@ import (
 
 // Tests against the live API, only run with MANGOPLUS_LIVE=1 to avoid hitting the API on every run.
 
-var client = NewPlusClient(DefaultOptions())
+var client = mustClient(DefaultOptions())
+
+func mustClient(options Options) *PlusClient {
+	c, err := NewPlusClient(options)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
 
 func skipUnlessLive(t *testing.T) {
 	if os.Getenv("MANGOPLUS_LIVE") != "1" {
@@ -67,7 +75,7 @@ func TestLivePageGetLegacyViewer(t *testing.T) {
 	skipUnlessLive(t)
 	o := DefaultOptions()
 	o.Viewer = ViewerLegacy
-	appClient := NewPlusClient(o)
+	appClient := mustClient(o)
 
 	// Ghost fixers' first chapter
 	pages, err := appClient.Page.Get("1020497", false, ImageQualityHigh)

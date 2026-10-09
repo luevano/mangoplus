@@ -41,12 +41,12 @@ func (s *PageService) GetContext(ctx context.Context, id string) ([]Page, error)
 
 	res, err := s.client.Request(ctx, http.MethodGet, *u, nil, h, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get chapter pages %q: %w", id, err)
 	}
 
 	pages := res.PageList
 	if pages == nil {
-		return nil, fmt.Errorf("no pages found for chapter id %q", id)
+		return nil, fmt.Errorf("get chapter pages %q: %w", id, ErrNotFound)
 	}
 	return *pages, nil
 }

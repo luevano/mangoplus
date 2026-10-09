@@ -56,7 +56,10 @@ func newTestClient(t *testing.T, options Options) (*PlusClient, *url.Values) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := NewPlusClient(options)
+	c, err := NewPlusClient(options)
+	if err != nil {
+		t.Fatal(err)
+	}
 	c.baseAPI = server.URL
 	return c, &lastQuery
 }

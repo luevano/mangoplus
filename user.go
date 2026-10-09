@@ -22,11 +22,11 @@ func (s *UserService) Profile() (*ProfileSettingsView, error) {
 func (s *UserService) ProfileContext(ctx context.Context) (*ProfileSettingsView, error) {
 	res, err := s.client.Request(ctx, http.MethodGet, ProfilePath, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get profile: %w", err)
 	}
 	profile := res.GetProfileSettingsView()
 	if profile == nil {
-		return nil, fmt.Errorf("no profile in response")
+		return nil, fmt.Errorf("get profile: no profile in response")
 	}
 	return profile, nil
 }
@@ -42,11 +42,11 @@ func (s *UserService) Subscription() (*Subscription, error) {
 func (s *UserService) SubscriptionContext(ctx context.Context) (*Subscription, error) {
 	res, err := s.client.Request(ctx, http.MethodGet, SubscriptionPath, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get subscription: %w", err)
 	}
 	subscription := res.GetSubscriptionView().GetUserSubscription()
 	if subscription == nil {
-		return nil, fmt.Errorf("no subscription in response")
+		return nil, fmt.Errorf("get subscription: no subscription in response")
 	}
 	return subscription, nil
 }

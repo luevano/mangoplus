@@ -74,11 +74,11 @@ func (s *MangaService) ListContext(ctx context.Context, query, language string, 
 
 	res, err := s.client.Request(ctx, http.MethodGet, *u, p, h, nil)
 	if err != nil {
-		return TitlesDTO{}, err
+		return TitlesDTO{}, fmt.Errorf("search manga %q (%s, page %d): %w", query, language, page, err)
 	}
 	titles := res.TitlesDTO
 	if titles == nil || titles.TitleList == nil || len(*titles.TitleList) == 0 {
-		return TitlesDTO{}, fmt.Errorf("no mangas found for query %q, language %q, page %d", query, language, page)
+		return TitlesDTO{}, fmt.Errorf("search manga %q (%s, page %d): %w", query, language, page, ErrNotFound)
 	}
 	return *titles, nil
 }

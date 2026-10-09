@@ -51,9 +51,9 @@ type service struct {
 // Use DefaultOptions for defaults, all fields except the secrets and OnRegister must be non-empty.
 //
 // If no secret is provided, a new device is registered on the first request.
-func NewPlusClient(options Options) *PlusClient {
+func NewPlusClient(options Options) (*PlusClient, error) {
 	if err := options.validate(); err != nil {
-		panic(fmt.Errorf("Invalid MangoPlus client options: %s", err.Error()))
+		return nil, fmt.Errorf("mangoplus: invalid options: %w", err)
 	}
 
 	// The manga_viewer_v3 endpoint sets a cookie that is needed to get subscription-only images.
@@ -71,7 +71,7 @@ func NewPlusClient(options Options) *PlusClient {
 	plus.Page = (*PageService)(&plus.common)
 	plus.User = (*UserService)(&plus.common)
 
-	return plus
+	return plus, nil
 }
 
 // Request: Sends a request to the MangaPlus API and decodes the protobuf response.
@@ -85,43 +85,46 @@ func (c *PlusClient) Request(ctx context.Context, method string, path string, pa
 }
 
 func (c *PlusClient) request(ctx context.Context, method string, path string, params map[string]string) (*SuccessResult, error) {
+	// prefix for errors that aren't from the API itself
+	op := fmt.Sprintf("mangoplus: %s /%s", method, path)
+
 	u, err := url.JoinPath(c.baseAPI, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	req, err := http.NewRequestWithContext(ctx, method, u, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	req.URL.RawQuery = c.getFinalParams(params).Encode()
 	req.Header.Set("User-Agent", c.options.UserAgent)
 
 	if err := c.waitForNextRequest(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("MangaPlus API status code %d", resp.StatusCode)
+		return nil, &HTTPError{Method: method, Path: "/" + path, StatusCode: resp.StatusCode}
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: read response: %w", op, err)
 	}
 	var res Response
 	if err := proto.Unmarshal(body, &res); err != nil {
-		return nil, fmt.Errorf("failed to decode MangaPlus response: %s", err.Error())
+		return nil, fmt.Errorf("%s: decode response: %w", op, err)
 	}
 	if res.Error != nil {
-		return nil, fmt.Errorf("MangaPlus API error: %s", res.Error.message())
+		return nil, newServerError(method, "/"+path, res.Error)
 	}
 	if res.Success == nil {
-		return nil, fmt.Errorf("MangaPlus API unexpected error (Error and Success fields empty)")
+		return nil, fmt.Errorf("%s: empty response", op)
 	}
 	return res.Success, nil
 }

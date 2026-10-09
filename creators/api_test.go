@@ -7,7 +7,13 @@ import (
 
 // Tests against the live API, only run with MANGOPLUS_LIVE=1 to avoid hitting the API on every run.
 
-var client = NewCreatorsClient(DefaultOptions())
+var client = func() *CreatorsClient {
+	c, err := NewCreatorsClient(DefaultOptions())
+	if err != nil {
+		panic(err)
+	}
+	return c
+}()
 
 func skipUnlessLive(t *testing.T) {
 	if os.Getenv("MANGOPLUS_LIVE") != "1" {

@@ -27,11 +27,11 @@ func (s *MangaService) GetContext(ctx context.Context, id string) (*TitleDetailV
 
 	res, err := s.client.Request(ctx, http.MethodGet, MangaPath, p)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get manga %q: %w", id, err)
 	}
 	titleDetail := res.GetTitleDetailView()
 	if titleDetail == nil {
-		return nil, fmt.Errorf("no details for manga id %q", id)
+		return nil, fmt.Errorf("get manga %q: no title details in response", id)
 	}
 	return titleDetail, nil
 }
@@ -53,7 +53,7 @@ func (s *MangaService) AllContext(ctx context.Context, language Language) ([]*Ti
 
 		res, err := s.client.Request(ctx, http.MethodGet, AllMangaPath, p)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list all %s manga: %w", mangaType, err)
 		}
 		// Each group has the title in all of its languages, regardless of "clang"
 		for _, group := range res.GetSearchView().GetAllTitlesGroup() {
@@ -65,7 +65,7 @@ func (s *MangaService) AllContext(ctx context.Context, language Language) ([]*Ti
 		}
 	}
 	if len(titles) == 0 {
-		return nil, fmt.Errorf("no mangas found")
+		return nil, fmt.Errorf("list all manga in %s: %w", language, ErrNotFound)
 	}
 	return titles, nil
 }

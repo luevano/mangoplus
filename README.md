@@ -27,7 +27,10 @@ import (
 
 func main() {
     // Create new client, a device is registered on the first request.
-    c := mangoplus.NewPlusClient(mangoplus.DefaultOptions())
+    c, err := mangoplus.NewPlusClient(mangoplus.DefaultOptions())
+    if err != nil {
+        panic(err)
+    }
 
     // Get manga by id (Ghost Fixers).
     mangaDetails, err := c.Manga.Get("100310")
@@ -39,6 +42,10 @@ func main() {
     }
 }
 ```
+
+Errors can be checked with `errors.Is` against `ErrNotFound`, `ErrRateLimited`, `ErrMaintenance`,
+`ErrSubscriptionRequired` and `ErrRegionBlocked`, or inspected with `errors.As` as `*HTTPError` (non-200
+status) or `*ServerError` (error result from the API, with its `Code`).
 
 ### Free device
 

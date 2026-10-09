@@ -44,11 +44,11 @@ func (s *PageService) GetContext(ctx context.Context, id string, splitImages boo
 
 	res, err := s.client.Request(ctx, http.MethodGet, path, p)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get chapter pages %q: %w", id, err)
 	}
 	mangaViewer := res.GetMangaViewer()
 	if mangaViewer == nil {
-		return nil, fmt.Errorf("unexpected error while getting pages for chapter id %q", id)
+		return nil, fmt.Errorf("get chapter pages %q: no manga viewer in response", id)
 	}
 
 	var pages []*MangaPage

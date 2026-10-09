@@ -62,12 +62,12 @@ func (s *ChapterService) ListContext(ctx context.Context, id string, page int) (
 
 	res, err := s.client.Request(ctx, http.MethodGet, *u, p, h, nil)
 	if err != nil {
-		return EpisodesDTO{}, err
+		return EpisodesDTO{}, fmt.Errorf("list chapters for manga %q (page %d): %w", id, page, err)
 	}
 
 	episodes := res.EpisodesDTO
-	if episodes == nil  || episodes.EpisodeList == nil || len(*episodes.EpisodeList) == 0 {
-		return EpisodesDTO{}, fmt.Errorf("no chapters found for manga id %q, page %d", id, page)
+	if episodes == nil || episodes.EpisodeList == nil || len(*episodes.EpisodeList) == 0 {
+		return EpisodesDTO{}, fmt.Errorf("list chapters for manga %q (page %d): %w", id, page, ErrNotFound)
 	}
 	return *episodes, nil
 }

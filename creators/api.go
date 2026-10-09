@@ -72,9 +72,9 @@ type service struct {
 // NewCreatorsClient: New MangaPlusCreators client.
 //
 // Options must be non-nil. Use DefaultOptions for defaults, all fields must be non-empty.
-func NewCreatorsClient(options Options) *CreatorsClient {
+func NewCreatorsClient(options Options) (*CreatorsClient, error) {
 	if err := options.validate(); err != nil {
-		panic(fmt.Errorf("Invalid MangoPlusCreators client options: %s", err.Error()))
+		return nil, fmt.Errorf("mangapluscreators: invalid options: %w", err)
 	}
 
 	client := http.Client{}
@@ -86,7 +86,7 @@ func NewCreatorsClient(options Options) *CreatorsClient {
 	creators.Chapter = (*ChapterService)(&creators.common)
 	creators.Page = (*PageService)(&creators.common)
 
-	return creators
+	return creators, nil
 }
 
 // Request: Sends a request to the MangaPlus API and decodes into a CreatorsResponse.
@@ -100,33 +100,37 @@ func (c *CreatorsClient) Request(
 ) (CreatorsResponse, error) {
 	p := c.getFinalParams(params)
 	url.RawQuery = p.Encode()
+	// prefix for errors that aren't from the API itself
+	op := fmt.Sprintf("mangapluscreators: %s %s", method, url.Path)
 
 	req, err := http.NewRequestWithContext(ctx, method, url.String(), body)
 	if err != nil {
-		return CreatorsResponse{}, nil
+		return CreatorsResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 	req.Header = c.getFinalHeaders(headers)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return CreatorsResponse{}, nil
+		return CreatorsResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 	defer resp.Body.Close()
 
-	switch resp.StatusCode {
-	case 200:
-		var res CreatorsResponse
-		err = json.NewDecoder(resp.Body).Decode(&res)
-		if err != nil {
-			return CreatorsResponse{}, fmt.Errorf("Failed to decode MangaPlusCreators response: %s", err.Error())
-		}
-		if res.Result != "OK" {
-			return CreatorsResponse{}, fmt.Errorf("MangaPlusCreators API response Result (%s) is not OK. Messages: %s", res.Result, res.GetMessages())
-		}
-		return res, nil
-	default:
-		return CreatorsResponse{}, fmt.Errorf("MangaPlusCreators API status code %d", resp.StatusCode)
+	// AWS WAF answers 202 with a challenge only a browser can solve
+	if resp.Header.Get("x-amzn-waf-action") != "" {
+		return CreatorsResponse{}, fmt.Errorf("%s: blocked by an AWS WAF bot challenge", op)
 	}
+	if resp.StatusCode != http.StatusOK {
+		return CreatorsResponse{}, &HTTPError{Method: method, Path: url.Path, StatusCode: resp.StatusCode}
+	}
+
+	var res CreatorsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return CreatorsResponse{}, fmt.Errorf("%s: decode response: %w", op, err)
+	}
+	if res.Result != "OK" {
+		return CreatorsResponse{}, fmt.Errorf("%s: result %q: %s", op, res.Result, res.GetMessages())
+	}
+	return res, nil
 }
 
 // build and get the final params used for the request
