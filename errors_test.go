@@ -160,3 +160,14 @@ func TestRedactURL(t *testing.T) {
 		}
 	}
 }
+
+func TestUnknownTitleIsNotFound(t *testing.T) {
+	detail := &ServerError{Method: "GET", Path: "/" + MangaPath, Code: 11101}
+	if !errors.Is(detail, ErrNotFound) {
+		t.Error("11101 on a title's details isn't ErrNotFound")
+	}
+	other := &ServerError{Method: "GET", Path: "/manga_viewer", Code: 11101}
+	if errors.Is(other, ErrNotFound) {
+		t.Error("11101 elsewhere is ErrNotFound")
+	}
+}

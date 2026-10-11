@@ -70,6 +70,9 @@ func (e *ServerError) Is(target error) bool {
 		return target == ErrRateLimited
 	case 11103:
 		return target == ErrNotFound
+	case 11101:
+		// a generic "failed to load the page", on a title's details it's an unknown title
+		return target == ErrNotFound && strings.Contains(e.Path, MangaPath)
 	}
 	return false
 }
