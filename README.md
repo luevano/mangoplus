@@ -61,6 +61,7 @@ back as `Options.FreeSecret`.
 
 To read subscription chapters, set `Options.Secret` to the device secret of the official app where the
 subscription is active. See [docs/subscription.md](docs/subscription.md) for how to get it.
+`c.User.Subscription()` returns the device's plan (`basic` without a subscription).
 
 `ViewerApp` (the default) is the only viewer that sets the cookie subscription-only images need.
 `ViewerLegacy` uses the old endpoint and is deprecated.
