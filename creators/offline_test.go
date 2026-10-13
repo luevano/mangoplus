@@ -109,3 +109,33 @@ func TestResultNotOK(t *testing.T) {
 		t.Errorf("wanted the api message, got %v", err)
 	}
 }
+
+// AWS WAF answers with a JavaScript challenge (202) or a captcha (405) only a browser can solve,
+// or blocks the request (403).
+func TestWAF(t *testing.T) {
+	waf := func(status int, action string) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			if action != "" {
+				w.Header().Set("x-amzn-waf-action", action)
+			}
+			w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+			w.WriteHeader(status)
+			w.Write([]byte(`<!DOCTYPE html><html><head><script src="https://x.token.awswaf.com/challenge.js"></script></head><body></body></html>`))
+		}
+	}
+	for _, tt := range []struct {
+		status int
+		action string
+	}{
+		{http.StatusAccepted, "challenge"},
+		{http.StatusMethodNotAllowed, "captcha"},
+		{http.StatusAccepted, ""},
+		{http.StatusForbidden, ""},
+	} {
+		c := fakeClient(t, waf(tt.status, tt.action))
+		_, err := c.Manga.List("rauch", "en", 1)
+		if !errors.Is(err, ErrBlocked) || !strings.Contains(err.Error(), "blocked by AWS WAF") {
+			t.Errorf("%d %q: wanted ErrBlocked, got %v", tt.status, tt.action, err)
+		}
+	}
+}

@@ -24,3 +24,7 @@ func (e *HTTPError) Error() string {
 func (e *HTTPError) Is(target error) bool {
 	return e.StatusCode == http.StatusNotFound && target == ErrNotFound
 }
+
+// ErrBlocked: AWS WAF answered instead of the API, with a challenge only a browser can solve or
+// a block. Check with errors.Is.
+var ErrBlocked = errors.New("blocked by AWS WAF")

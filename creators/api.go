@@ -118,9 +118,8 @@ func (c *CreatorsClient) Request(
 	}
 	defer resp.Body.Close()
 
-	// AWS WAF answers 202 with a challenge only a browser can solve
-	if resp.Header.Get("x-amzn-waf-action") != "" {
-		return CreatorsResponse{}, fmt.Errorf("%s: blocked by an AWS WAF bot challenge", op)
+	if err := wafError(resp); err != nil {
+		return CreatorsResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return CreatorsResponse{}, &HTTPError{Method: method, Path: url.Path, StatusCode: resp.StatusCode}
@@ -134,6 +133,21 @@ func (c *CreatorsClient) Request(
 		return CreatorsResponse{}, fmt.Errorf("%s: result %q: %s", op, res.Result, res.GetMessages())
 	}
 	return res, nil
+}
+
+// wafError: ErrBlocked if AWS WAF answered instead of the API: a challenge (202) or captcha (405)
+// say so in x-amzn-waf-action, a block is a 403 html page.
+func wafError(resp *http.Response) error {
+	if action := resp.Header.Get("x-amzn-waf-action"); action != "" {
+		return fmt.Errorf("%w (%s)", ErrBlocked, action)
+	}
+	switch {
+	case resp.StatusCode == http.StatusAccepted:
+		return fmt.Errorf("%w (challenge)", ErrBlocked)
+	case resp.StatusCode == http.StatusForbidden && strings.HasPrefix(resp.Header.Get("Content-Type"), "text/html"):
+		return fmt.Errorf("%w (403 forbidden)", ErrBlocked)
+	}
+	return nil
 }
 
 // build and get the final params used for the request
