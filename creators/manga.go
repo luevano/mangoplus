@@ -45,7 +45,7 @@ type Title struct {
 // List: Get manga list.
 //
 // The API itself defaults to the available language (usually english)
-// when the requested language doesn't exist.
+// when the requested language doesn't exist. No results is an empty (maybe nil) TitleList.
 func (s *MangaService) List(query, language string, page int) (TitlesDTO, error) {
 	return s.ListContext(context.Background(), query, language, page)
 }
@@ -76,9 +76,9 @@ func (s *MangaService) ListContext(ctx context.Context, query, language string, 
 	if err != nil {
 		return TitlesDTO{}, fmt.Errorf("search manga %q (%s, page %d): %w", query, language, page, err)
 	}
-	titles := res.TitlesDTO
-	if titles == nil || titles.TitleList == nil || len(*titles.TitleList) == 0 {
-		return TitlesDTO{}, fmt.Errorf("search manga %q (%s, page %d): %w", query, language, page, ErrNotFound)
+	// no results may come without a list
+	if res.TitlesDTO == nil {
+		return TitlesDTO{}, nil
 	}
-	return *titles, nil
+	return *res.TitlesDTO, nil
 }

@@ -39,7 +39,7 @@ type Episode struct {
 	Oneshot           bool   `json:"oneshot"`
 }
 
-// List: Get chapter list.
+// List: Get chapter list, no chapters is an empty (maybe nil) EpisodeList.
 func (s *ChapterService) List(id string, page int) (EpisodesDTO, error) {
 	return s.ListContext(context.Background(), id, page)
 }
@@ -65,9 +65,9 @@ func (s *ChapterService) ListContext(ctx context.Context, id string, page int) (
 		return EpisodesDTO{}, fmt.Errorf("list chapters for manga %q (page %d): %w", id, page, err)
 	}
 
-	episodes := res.EpisodesDTO
-	if episodes == nil || episodes.EpisodeList == nil || len(*episodes.EpisodeList) == 0 {
-		return EpisodesDTO{}, fmt.Errorf("list chapters for manga %q (page %d): %w", id, page, ErrNotFound)
+	// no chapters may come without a list
+	if res.EpisodesDTO == nil {
+		return EpisodesDTO{}, nil
 	}
-	return *episodes, nil
+	return *res.EpisodesDTO, nil
 }
