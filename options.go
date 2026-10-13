@@ -84,9 +84,7 @@ func (o Options) validate() error {
 
 func DefaultOptions() Options {
 	b := make([]byte, 8)
-	if _, err := rand.Read(b); err != nil {
-		panic("Error while generating a random AndroidID.")
-	}
+	rand.Read(b)
 	android_id := hex.EncodeToString(b)
 	return Options{
 		UserAgent:  defaultUserAgent,
