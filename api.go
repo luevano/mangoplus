@@ -21,6 +21,9 @@ import (
 
 const BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
 
+// maxBodySize caps the responses read.
+const maxBodySize = 100 << 20
+
 // PlusClient: The MangaPlus client.
 type PlusClient struct {
 	client  *http.Client
@@ -124,7 +127,10 @@ func (c *PlusClient) request(ctx context.Context, method string, path string, pa
 		return nil, &HTTPError{Method: method, Path: "/" + path, StatusCode: resp.StatusCode}
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBodySize+1))
+	if err == nil && len(body) > maxBodySize {
+		err = fmt.Errorf("response over %d bytes", maxBodySize)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: read response: %w", op, err)
 	}

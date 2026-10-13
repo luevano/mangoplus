@@ -127,7 +127,7 @@ func (c *CreatorsClient) Request(
 	}
 
 	var res CreatorsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 100<<20)).Decode(&res); err != nil {
 		return CreatorsResponse{}, fmt.Errorf("%s: decode response: %w", op, err)
 	}
 	if res.Result != "OK" {
