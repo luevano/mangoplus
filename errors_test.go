@@ -52,6 +52,13 @@ func TestHTTPError(t *testing.T) {
 	}
 }
 
+func TestHTTPErrorRateLimited(t *testing.T) {
+	c := newErrorTestClient(t, http.StatusTooManyRequests, nil)
+	if _, err := c.Manga.Get("100310"); !errors.Is(err, ErrRateLimited) {
+		t.Errorf("a 429 should match ErrRateLimited, got %v", err)
+	}
+}
+
 func TestServerError(t *testing.T) {
 	tests := []struct {
 		res      *Response

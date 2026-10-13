@@ -10,6 +10,10 @@ import (
 )
 
 // Errors to check with errors.Is, the error types below match them when it applies.
+//
+// ErrRateLimited (a 429, or the API's 10522) has no retry delay on purpose: 10522 reportedly locks
+// the device out for 10+ minutes, retrying within seconds can't work and may keep it locked, so
+// callers should stop and tell the user instead of waiting.
 var (
 	ErrNotFound             = errors.New("not found")
 	ErrRateLimited          = errors.New("rate limited")
@@ -33,6 +37,8 @@ func (e *HTTPError) Is(target error) bool {
 	switch e.StatusCode {
 	case http.StatusNotFound:
 		return target == ErrNotFound
+	case http.StatusTooManyRequests:
+		return target == ErrRateLimited
 	case http.StatusServiceUnavailable:
 		return target == ErrMaintenance
 	}
