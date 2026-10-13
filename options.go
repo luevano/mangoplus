@@ -4,11 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"time"
 )
 
 // The API rejects requests that don't look like they come from the Android app.
 const defaultUserAgent = "okhttp/4.12.0"
+
+// defaultTimeout: Timeout of the client used when Options.HTTPClient is nil.
+const defaultTimeout = time.Minute
 
 // Viewer: Which endpoint and params are used to get chapter pages.
 type Viewer string
@@ -49,6 +53,11 @@ type Options struct {
 
 	// OnRegister: Called with the secret of a newly registered device, e.g. to save it as FreeSecret.
 	OnRegister func(secret string)
+
+	// HTTPClient: Client used for every request, copied to give it a cookie jar if it has none.
+	//
+	// Optional, a client with a 1 minute timeout is used when nil.
+	HTTPClient *http.Client
 }
 
 func (o Options) validate() error {

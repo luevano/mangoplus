@@ -59,8 +59,13 @@ func NewPlusClient(options Options) (*PlusClient, error) {
 	}
 
 	// The manga_viewer_v3 endpoint sets a cookie that is needed to get subscription-only images.
-	jar, _ := cookiejar.New(nil)
-	client := http.Client{Jar: jar}
+	client := http.Client{Timeout: defaultTimeout}
+	if options.HTTPClient != nil {
+		client = *options.HTTPClient
+	}
+	if client.Jar == nil {
+		client.Jar, _ = cookiejar.New(nil)
+	}
 	secret := options.Secret
 	if secret == "" {
 		secret = options.FreeSecret

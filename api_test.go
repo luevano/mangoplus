@@ -233,3 +233,26 @@ func TestContextCanceled(t *testing.T) {
 		t.Errorf("wanted context.Canceled, got %v", err)
 	}
 }
+
+func TestHTTPClientOption(t *testing.T) {
+	c, err := NewPlusClient(DefaultOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.client.Timeout == 0 || c.client.Jar == nil {
+		t.Error("the default client should have a timeout and a cookie jar")
+	}
+
+	given := &http.Client{Timeout: 42}
+	o := DefaultOptions()
+	o.HTTPClient = given
+	if c, err = NewPlusClient(o); err != nil {
+		t.Fatal(err)
+	}
+	if c.client.Timeout != 42 || c.client.Jar == nil {
+		t.Error("the given client should be used, with a cookie jar")
+	}
+	if given.Jar != nil {
+		t.Error("the given client shouldn't be modified")
+	}
+}

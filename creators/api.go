@@ -77,8 +77,11 @@ func NewCreatorsClient(options Options) (*CreatorsClient, error) {
 		return nil, fmt.Errorf("mangapluscreators: invalid options: %w", err)
 	}
 
-	client := http.Client{}
-	creators := &CreatorsClient{client: &client, options: options}
+	client := options.HTTPClient
+	if client == nil {
+		client = &http.Client{Timeout: defaultTimeout}
+	}
+	creators := &CreatorsClient{client: client, options: options}
 
 	creators.common.client = creators
 	// Reuse the common client for the other services
