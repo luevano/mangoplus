@@ -4,7 +4,8 @@ go-mod := `go list`
 
 # run tests
 test:
-    go test ./...
+    go vet ./...
+    go test -race ./...
 
 # update deps
 update:
