@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -176,5 +177,16 @@ func TestUnknownTitleIsNotFound(t *testing.T) {
 	other := &ServerError{Method: "GET", Path: "/manga_viewer", Code: 11101}
 	if errors.Is(other, ErrNotFound) {
 		t.Error("11101 elsewhere is ErrNotFound")
+	}
+}
+
+func TestRedactParsedURL(t *testing.T) {
+	u, _ := url.Parse("https://host/api/x?secret=s&title_id=1")
+	if got := RedactURL(u); got != "https://host/api/x?secret=REDACTED&title_id=1" {
+		t.Errorf("got %q", got)
+	}
+	t.Setenv(UnsafeShowSecretEnv, "1")
+	if got := RedactURL(u); got != "https://host/api/x?secret=s&title_id=1" {
+		t.Errorf("with %s=1: got %q", UnsafeShowSecretEnv, got)
 	}
 }

@@ -212,12 +212,26 @@ func redactURL(rawURL string) string {
 		before, _, _ := strings.Cut(rawURL, "?")
 		return before
 	}
+	return redact(u)
+}
+
+// RedactURL: u with the secret and registration keys hidden, for logs (e.g. a debug
+// transport, see libmangal's netutil.LoggingTransport), unless UnsafeShowSecretEnv is "1".
+func RedactURL(u *url.URL) string {
+	if os.Getenv(UnsafeShowSecretEnv) == "1" {
+		return u.String()
+	}
+	return redact(u)
+}
+
+func redact(u *url.URL) string {
+	redacted := *u
 	query := u.Query()
 	for _, param := range sensitiveParams {
 		if query.Has(param) {
 			query.Set(param, "REDACTED")
 		}
 	}
-	u.RawQuery = query.Encode()
-	return u.String()
+	redacted.RawQuery = query.Encode()
+	return redacted.String()
 }
