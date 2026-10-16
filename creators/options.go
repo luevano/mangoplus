@@ -8,7 +8,7 @@ import (
 
 // defaultUserAgent is libmangal's netutil.BrowserUserAgent (the source of truth, mangoplus
 // doesn't import libmangal): keep them the same.
-const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:156.0) Gecko/20100101 Firefox/156.0"
+const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:158.0) Gecko/20100101 Firefox/158.0"
 
 // defaultTimeout: Timeout of the client used when Options.HTTPClient is nil.
 const defaultTimeout = time.Minute
