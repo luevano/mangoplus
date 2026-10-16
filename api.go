@@ -19,7 +19,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
+const (
+	BaseAPI = "https://jumpg-api.tokyo-cdn.com/api"
+	// BaseWebAPI is the web reader's api, limited to what the browser gets
+	BaseWebAPI = "https://jumpg-webapi.tokyo-cdn.com/api"
+)
 
 // maxBodySize caps the responses read.
 const maxBodySize = 100 << 20
