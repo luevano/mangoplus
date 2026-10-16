@@ -57,6 +57,15 @@ Without a secret, a new free device is registered on the first request. To reuse
 instead of registering a new one every time, save the secret passed to `Options.OnRegister` and give it
 back as `Options.FreeSecret`.
 
+### Web api
+
+`Options.API = mangoplus.APIWeb` uses the website's api (`BaseWebAPI`, jumpg-webapi) instead of the
+app's: no device or secret (the secrets are ignored), a random `SESSION-TOKEN` header like the
+browser sends, at most one request per second (keiyoushi's limit). It only has what the website
+shows: the first and latest chapters of a title (`ChapterListV2` is filled with them), no account
+(`User` returns `ErrWebAPIUnsupported`). `APIAuto` picks it when neither `Secret` nor `FreeSecret`
+is set, the app's api otherwise. `APIApp` (the default) keeps the app's api.
+
 ### Subscription
 
 To read subscription chapters, set `Options.Secret` to the device secret of the official app where the

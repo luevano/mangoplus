@@ -20,6 +20,8 @@ var (
 	ErrMaintenance          = errors.New("under maintenance")
 	ErrSubscriptionRequired = errors.New("subscription required")
 	ErrRegionBlocked        = errors.New("not available in this region")
+	// ErrWebAPIUnsupported: The web api has no such endpoint (accounts), see Options.API.
+	ErrWebAPIUnsupported = errors.New("not available on the web api")
 )
 
 // HTTPError: The API answered with a non-200 status code.

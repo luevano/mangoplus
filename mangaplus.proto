@@ -22,6 +22,8 @@ message SuccessResult {
   TitleDetailView title_detail_view = 8;
   MangaViewer manga_viewer = 10;
   ProfileSettingsView profile_settings_view = 13;
+  // all_titles_view: web api only ("title_list/allV2").
+  AllTitlesView all_titles_view = 25;
   SearchView search_view = 35;
   SubscriptionView subscription_view = 36;
 }
@@ -55,6 +57,11 @@ message RegistrationData {
 // SearchView: Response of the "title_list/all_v3" endpoint.
 message SearchView {
   repeated AllTitlesGroup all_titles_group = 3;
+}
+
+// AllTitlesView: Response of the web api's "title_list/allV2" endpoint, every title.
+message AllTitlesView {
+  repeated AllTitlesGroup all_titles_group = 1;
 }
 
 // AllTitlesGroup: The same title in all of its available languages.
@@ -97,6 +104,16 @@ message TitleDetailView {
   Label label = 34;
   bool is_first_time_free = 35;
   repeated Chapter chapter_list_v2 = 38;
+  // chapter_list_group: web api only, instead of chapter_list_v2.
+  repeated ChapterListGroup chapter_list_group = 28;
+}
+
+// ChapterListGroup: The web api's chapters, the mid list is what the website hides.
+message ChapterListGroup {
+  string chapter_numbers = 1;
+  repeated Chapter first_chapter_list = 2;
+  repeated Chapter mid_chapter_list = 3;
+  repeated Chapter last_chapter_list = 4;
 }
 
 message TitleLabels {
@@ -147,6 +164,8 @@ message MangaViewer {
   string plan_type = 14;
   // Not a Language, but a code like "eng".
   string title_language = 15;
+  // view_token: web api only, sent back as the Plus-Vw-Token header of the images.
+  string view_token = 19;
 }
 
 // Page: Only manga pages are used, the rest (banners, ads, last page) are left out.

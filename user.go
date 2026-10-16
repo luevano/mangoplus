@@ -20,6 +20,9 @@ func (s *UserService) Profile() (*ProfileSettingsView, error) {
 
 // ProfileContext: Same as Profile, with a context.
 func (s *UserService) ProfileContext(ctx context.Context) (*ProfileSettingsView, error) {
+	if s.client.web {
+		return nil, fmt.Errorf("get profile: %w", ErrWebAPIUnsupported)
+	}
 	res, err := s.client.Request(ctx, http.MethodGet, ProfilePath, nil)
 	if err != nil {
 		return nil, fmt.Errorf("get profile: %w", err)
@@ -40,6 +43,9 @@ func (s *UserService) Subscription() (*Subscription, error) {
 
 // SubscriptionContext: Same as Subscription, with a context.
 func (s *UserService) SubscriptionContext(ctx context.Context) (*Subscription, error) {
+	if s.client.web {
+		return nil, fmt.Errorf("get subscription: %w", ErrWebAPIUnsupported)
+	}
 	res, err := s.client.Request(ctx, http.MethodGet, SubscriptionPath, nil)
 	if err != nil {
 		return nil, fmt.Errorf("get subscription: %w", err)

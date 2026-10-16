@@ -581,10 +581,12 @@ type SuccessResult struct {
 	TitleDetailView     *TitleDetailView       `protobuf:"bytes,8,opt,name=title_detail_view,json=titleDetailView,proto3" json:"title_detail_view,omitempty"`
 	MangaViewer         *MangaViewer           `protobuf:"bytes,10,opt,name=manga_viewer,json=mangaViewer,proto3" json:"manga_viewer,omitempty"`
 	ProfileSettingsView *ProfileSettingsView   `protobuf:"bytes,13,opt,name=profile_settings_view,json=profileSettingsView,proto3" json:"profile_settings_view,omitempty"`
-	SearchView          *SearchView            `protobuf:"bytes,35,opt,name=search_view,json=searchView,proto3" json:"search_view,omitempty"`
-	SubscriptionView    *SubscriptionView      `protobuf:"bytes,36,opt,name=subscription_view,json=subscriptionView,proto3" json:"subscription_view,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// all_titles_view: web api only ("title_list/allV2").
+	AllTitlesView    *AllTitlesView    `protobuf:"bytes,25,opt,name=all_titles_view,json=allTitlesView,proto3" json:"all_titles_view,omitempty"`
+	SearchView       *SearchView       `protobuf:"bytes,35,opt,name=search_view,json=searchView,proto3" json:"search_view,omitempty"`
+	SubscriptionView *SubscriptionView `protobuf:"bytes,36,opt,name=subscription_view,json=subscriptionView,proto3" json:"subscription_view,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *SuccessResult) Reset() {
@@ -641,6 +643,13 @@ func (x *SuccessResult) GetMangaViewer() *MangaViewer {
 func (x *SuccessResult) GetProfileSettingsView() *ProfileSettingsView {
 	if x != nil {
 		return x.ProfileSettingsView
+	}
+	return nil
+}
+
+func (x *SuccessResult) GetAllTitlesView() *AllTitlesView {
+	if x != nil {
+		return x.AllTitlesView
 	}
 	return nil
 }
@@ -885,6 +894,51 @@ func (x *SearchView) GetAllTitlesGroup() []*AllTitlesGroup {
 	return nil
 }
 
+// AllTitlesView: Response of the web api's "title_list/allV2" endpoint, every title.
+type AllTitlesView struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AllTitlesGroup []*AllTitlesGroup      `protobuf:"bytes,1,rep,name=all_titles_group,json=allTitlesGroup,proto3" json:"all_titles_group,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *AllTitlesView) Reset() {
+	*x = AllTitlesView{}
+	mi := &file_mangaplus_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AllTitlesView) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AllTitlesView) ProtoMessage() {}
+
+func (x *AllTitlesView) ProtoReflect() protoreflect.Message {
+	mi := &file_mangaplus_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AllTitlesView.ProtoReflect.Descriptor instead.
+func (*AllTitlesView) Descriptor() ([]byte, []int) {
+	return file_mangaplus_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AllTitlesView) GetAllTitlesGroup() []*AllTitlesGroup {
+	if x != nil {
+		return x.AllTitlesGroup
+	}
+	return nil
+}
+
 // AllTitlesGroup: The same title in all of its available languages.
 type AllTitlesGroup struct {
 	state                     protoimpl.MessageState `protogen:"open.v1"`
@@ -898,7 +952,7 @@ type AllTitlesGroup struct {
 
 func (x *AllTitlesGroup) Reset() {
 	*x = AllTitlesGroup{}
-	mi := &file_mangaplus_proto_msgTypes[6]
+	mi := &file_mangaplus_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -910,7 +964,7 @@ func (x *AllTitlesGroup) String() string {
 func (*AllTitlesGroup) ProtoMessage() {}
 
 func (x *AllTitlesGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[6]
+	mi := &file_mangaplus_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -923,7 +977,7 @@ func (x *AllTitlesGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AllTitlesGroup.ProtoReflect.Descriptor instead.
 func (*AllTitlesGroup) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{6}
+	return file_mangaplus_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AllTitlesGroup) GetTheTitle() string {
@@ -971,7 +1025,7 @@ type Title struct {
 
 func (x *Title) Reset() {
 	*x = Title{}
-	mi := &file_mangaplus_proto_msgTypes[7]
+	mi := &file_mangaplus_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -983,7 +1037,7 @@ func (x *Title) String() string {
 func (*Title) ProtoMessage() {}
 
 func (x *Title) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[7]
+	mi := &file_mangaplus_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -996,7 +1050,7 @@ func (x *Title) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Title.ProtoReflect.Descriptor instead.
 func (*Title) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{7}
+	return file_mangaplus_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Title) GetTitleId() int32 {
@@ -1083,13 +1137,15 @@ type TitleDetailView struct {
 	Label                    *Label                 `protobuf:"bytes,34,opt,name=label,proto3" json:"label,omitempty"`
 	IsFirstTimeFree          bool                   `protobuf:"varint,35,opt,name=is_first_time_free,json=isFirstTimeFree,proto3" json:"is_first_time_free,omitempty"`
 	ChapterListV2            []*Chapter             `protobuf:"bytes,38,rep,name=chapter_list_v2,json=chapterListV2,proto3" json:"chapter_list_v2,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
+	// chapter_list_group: web api only, instead of chapter_list_v2.
+	ChapterListGroup []*ChapterListGroup `protobuf:"bytes,28,rep,name=chapter_list_group,json=chapterListGroup,proto3" json:"chapter_list_group,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *TitleDetailView) Reset() {
 	*x = TitleDetailView{}
-	mi := &file_mangaplus_proto_msgTypes[8]
+	mi := &file_mangaplus_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1101,7 +1157,7 @@ func (x *TitleDetailView) String() string {
 func (*TitleDetailView) ProtoMessage() {}
 
 func (x *TitleDetailView) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[8]
+	mi := &file_mangaplus_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1114,7 +1170,7 @@ func (x *TitleDetailView) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TitleDetailView.ProtoReflect.Descriptor instead.
 func (*TitleDetailView) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{8}
+	return file_mangaplus_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TitleDetailView) GetTitle() *Title {
@@ -1243,6 +1299,82 @@ func (x *TitleDetailView) GetChapterListV2() []*Chapter {
 	return nil
 }
 
+func (x *TitleDetailView) GetChapterListGroup() []*ChapterListGroup {
+	if x != nil {
+		return x.ChapterListGroup
+	}
+	return nil
+}
+
+// ChapterListGroup: The web api's chapters, the mid list is what the website hides.
+type ChapterListGroup struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ChapterNumbers   string                 `protobuf:"bytes,1,opt,name=chapter_numbers,json=chapterNumbers,proto3" json:"chapter_numbers,omitempty"`
+	FirstChapterList []*Chapter             `protobuf:"bytes,2,rep,name=first_chapter_list,json=firstChapterList,proto3" json:"first_chapter_list,omitempty"`
+	MidChapterList   []*Chapter             `protobuf:"bytes,3,rep,name=mid_chapter_list,json=midChapterList,proto3" json:"mid_chapter_list,omitempty"`
+	LastChapterList  []*Chapter             `protobuf:"bytes,4,rep,name=last_chapter_list,json=lastChapterList,proto3" json:"last_chapter_list,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ChapterListGroup) Reset() {
+	*x = ChapterListGroup{}
+	mi := &file_mangaplus_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChapterListGroup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChapterListGroup) ProtoMessage() {}
+
+func (x *ChapterListGroup) ProtoReflect() protoreflect.Message {
+	mi := &file_mangaplus_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChapterListGroup.ProtoReflect.Descriptor instead.
+func (*ChapterListGroup) Descriptor() ([]byte, []int) {
+	return file_mangaplus_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ChapterListGroup) GetChapterNumbers() string {
+	if x != nil {
+		return x.ChapterNumbers
+	}
+	return ""
+}
+
+func (x *ChapterListGroup) GetFirstChapterList() []*Chapter {
+	if x != nil {
+		return x.FirstChapterList
+	}
+	return nil
+}
+
+func (x *ChapterListGroup) GetMidChapterList() []*Chapter {
+	if x != nil {
+		return x.MidChapterList
+	}
+	return nil
+}
+
+func (x *ChapterListGroup) GetLastChapterList() []*Chapter {
+	if x != nil {
+		return x.LastChapterList
+	}
+	return nil
+}
+
 type TitleLabels struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	ReleaseSchedule ReleaseSchedule        `protobuf:"varint,1,opt,name=release_schedule,json=releaseSchedule,proto3,enum=mangoplus.ReleaseSchedule" json:"release_schedule,omitempty"`
@@ -1254,7 +1386,7 @@ type TitleLabels struct {
 
 func (x *TitleLabels) Reset() {
 	*x = TitleLabels{}
-	mi := &file_mangaplus_proto_msgTypes[9]
+	mi := &file_mangaplus_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1266,7 +1398,7 @@ func (x *TitleLabels) String() string {
 func (*TitleLabels) ProtoMessage() {}
 
 func (x *TitleLabels) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[9]
+	mi := &file_mangaplus_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1279,7 +1411,7 @@ func (x *TitleLabels) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TitleLabels.ProtoReflect.Descriptor instead.
 func (*TitleLabels) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{9}
+	return file_mangaplus_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TitleLabels) GetReleaseSchedule() ReleaseSchedule {
@@ -1313,7 +1445,7 @@ type Label struct {
 
 func (x *Label) Reset() {
 	*x = Label{}
-	mi := &file_mangaplus_proto_msgTypes[10]
+	mi := &file_mangaplus_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1325,7 +1457,7 @@ func (x *Label) String() string {
 func (*Label) ProtoMessage() {}
 
 func (x *Label) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[10]
+	mi := &file_mangaplus_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1338,7 +1470,7 @@ func (x *Label) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Label.ProtoReflect.Descriptor instead.
 func (*Label) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{10}
+	return file_mangaplus_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Label) GetLabel() LabelCode {
@@ -1380,7 +1512,7 @@ type Chapter struct {
 
 func (x *Chapter) Reset() {
 	*x = Chapter{}
-	mi := &file_mangaplus_proto_msgTypes[11]
+	mi := &file_mangaplus_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1392,7 +1524,7 @@ func (x *Chapter) String() string {
 func (*Chapter) ProtoMessage() {}
 
 func (x *Chapter) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[11]
+	mi := &file_mangaplus_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1405,7 +1537,7 @@ func (x *Chapter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Chapter.ProtoReflect.Descriptor instead.
 func (*Chapter) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{11}
+	return file_mangaplus_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Chapter) GetTitleId() int32 {
@@ -1538,13 +1670,15 @@ type MangaViewer struct {
 	PlanType         string                 `protobuf:"bytes,14,opt,name=plan_type,json=planType,proto3" json:"plan_type,omitempty"`
 	// Not a Language, but a code like "eng".
 	TitleLanguage string `protobuf:"bytes,15,opt,name=title_language,json=titleLanguage,proto3" json:"title_language,omitempty"`
+	// view_token: web api only, sent back as the Plus-Vw-Token header of the images.
+	ViewToken     string `protobuf:"bytes,19,opt,name=view_token,json=viewToken,proto3" json:"view_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MangaViewer) Reset() {
 	*x = MangaViewer{}
-	mi := &file_mangaplus_proto_msgTypes[12]
+	mi := &file_mangaplus_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1556,7 +1690,7 @@ func (x *MangaViewer) String() string {
 func (*MangaViewer) ProtoMessage() {}
 
 func (x *MangaViewer) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[12]
+	mi := &file_mangaplus_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1569,7 +1703,7 @@ func (x *MangaViewer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MangaViewer.ProtoReflect.Descriptor instead.
 func (*MangaViewer) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{12}
+	return file_mangaplus_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MangaViewer) GetPages() []*Page {
@@ -1670,6 +1804,13 @@ func (x *MangaViewer) GetTitleLanguage() string {
 	return ""
 }
 
+func (x *MangaViewer) GetViewToken() string {
+	if x != nil {
+		return x.ViewToken
+	}
+	return ""
+}
+
 // Page: Only manga pages are used, the rest (banners, ads, last page) are left out.
 type Page struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1680,7 +1821,7 @@ type Page struct {
 
 func (x *Page) Reset() {
 	*x = Page{}
-	mi := &file_mangaplus_proto_msgTypes[13]
+	mi := &file_mangaplus_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1692,7 +1833,7 @@ func (x *Page) String() string {
 func (*Page) ProtoMessage() {}
 
 func (x *Page) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[13]
+	mi := &file_mangaplus_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1705,7 +1846,7 @@ func (x *Page) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Page.ProtoReflect.Descriptor instead.
 func (*Page) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{13}
+	return file_mangaplus_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Page) GetMangaPage() *MangaPage {
@@ -1728,7 +1869,7 @@ type MangaPage struct {
 
 func (x *MangaPage) Reset() {
 	*x = MangaPage{}
-	mi := &file_mangaplus_proto_msgTypes[14]
+	mi := &file_mangaplus_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1740,7 +1881,7 @@ func (x *MangaPage) String() string {
 func (*MangaPage) ProtoMessage() {}
 
 func (x *MangaPage) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[14]
+	mi := &file_mangaplus_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1753,7 +1894,7 @@ func (x *MangaPage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MangaPage.ProtoReflect.Descriptor instead.
 func (*MangaPage) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{14}
+	return file_mangaplus_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *MangaPage) GetImageUrl() string {
@@ -1801,7 +1942,7 @@ type ProfileSettingsView struct {
 
 func (x *ProfileSettingsView) Reset() {
 	*x = ProfileSettingsView{}
-	mi := &file_mangaplus_proto_msgTypes[15]
+	mi := &file_mangaplus_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1813,7 +1954,7 @@ func (x *ProfileSettingsView) String() string {
 func (*ProfileSettingsView) ProtoMessage() {}
 
 func (x *ProfileSettingsView) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[15]
+	mi := &file_mangaplus_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1826,7 +1967,7 @@ func (x *ProfileSettingsView) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProfileSettingsView.ProtoReflect.Descriptor instead.
 func (*ProfileSettingsView) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{15}
+	return file_mangaplus_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ProfileSettingsView) GetUserName() string {
@@ -1846,7 +1987,7 @@ type SubscriptionView struct {
 
 func (x *SubscriptionView) Reset() {
 	*x = SubscriptionView{}
-	mi := &file_mangaplus_proto_msgTypes[16]
+	mi := &file_mangaplus_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1858,7 +1999,7 @@ func (x *SubscriptionView) String() string {
 func (*SubscriptionView) ProtoMessage() {}
 
 func (x *SubscriptionView) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[16]
+	mi := &file_mangaplus_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1871,7 +2012,7 @@ func (x *SubscriptionView) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionView.ProtoReflect.Descriptor instead.
 func (*SubscriptionView) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{16}
+	return file_mangaplus_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SubscriptionView) GetUserSubscription() *Subscription {
@@ -1895,7 +2036,7 @@ type Subscription struct {
 
 func (x *Subscription) Reset() {
 	*x = Subscription{}
-	mi := &file_mangaplus_proto_msgTypes[17]
+	mi := &file_mangaplus_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1907,7 +2048,7 @@ func (x *Subscription) String() string {
 func (*Subscription) ProtoMessage() {}
 
 func (x *Subscription) ProtoReflect() protoreflect.Message {
-	mi := &file_mangaplus_proto_msgTypes[17]
+	mi := &file_mangaplus_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1920,7 +2061,7 @@ func (x *Subscription) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Subscription.ProtoReflect.Descriptor instead.
 func (*Subscription) Descriptor() ([]byte, []int) {
-	return file_mangaplus_proto_rawDescGZIP(), []int{17}
+	return file_mangaplus_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Subscription) GetPlanType() string {
@@ -1965,13 +2106,14 @@ const file_mangaplus_proto_rawDesc = "" +
 	"\x0fmangaplus.proto\x12\tmangoplus\"l\n" +
 	"\bResponse\x122\n" +
 	"\asuccess\x18\x01 \x01(\v2\x18.mangoplus.SuccessResultR\asuccess\x12,\n" +
-	"\x05error\x18\x02 \x01(\v2\x16.mangoplus.ErrorResultR\x05error\"\xb2\x03\n" +
+	"\x05error\x18\x02 \x01(\v2\x16.mangoplus.ErrorResultR\x05error\"\xf4\x03\n" +
 	"\rSuccessResult\x12H\n" +
 	"\x11registration_data\x18\x02 \x01(\v2\x1b.mangoplus.RegistrationDataR\x10registrationData\x12F\n" +
 	"\x11title_detail_view\x18\b \x01(\v2\x1a.mangoplus.TitleDetailViewR\x0ftitleDetailView\x129\n" +
 	"\fmanga_viewer\x18\n" +
 	" \x01(\v2\x16.mangoplus.MangaViewerR\vmangaViewer\x12R\n" +
-	"\x15profile_settings_view\x18\r \x01(\v2\x1e.mangoplus.ProfileSettingsViewR\x13profileSettingsView\x126\n" +
+	"\x15profile_settings_view\x18\r \x01(\v2\x1e.mangoplus.ProfileSettingsViewR\x13profileSettingsView\x12@\n" +
+	"\x0fall_titles_view\x18\x19 \x01(\v2\x18.mangoplus.AllTitlesViewR\rallTitlesView\x126\n" +
 	"\vsearch_view\x18# \x01(\v2\x15.mangoplus.SearchViewR\n" +
 	"searchView\x12H\n" +
 	"\x11subscription_view\x18$ \x01(\v2\x1b.mangoplus.SubscriptionViewR\x10subscriptionView\"\xf4\x01\n" +
@@ -1990,7 +2132,9 @@ const file_mangaplus_proto_rawDesc = "" +
 	"\rdevice_secret\x18\x01 \x01(\tR\fdeviceSecret\"Q\n" +
 	"\n" +
 	"SearchView\x12C\n" +
-	"\x10all_titles_group\x18\x03 \x03(\v2\x19.mangoplus.AllTitlesGroupR\x0eallTitlesGroup\"\xc0\x01\n" +
+	"\x10all_titles_group\x18\x03 \x03(\v2\x19.mangoplus.AllTitlesGroupR\x0eallTitlesGroup\"T\n" +
+	"\rAllTitlesView\x12C\n" +
+	"\x10all_titles_group\x18\x01 \x03(\v2\x19.mangoplus.AllTitlesGroupR\x0eallTitlesGroup\"\xc0\x01\n" +
 	"\x0eAllTitlesGroup\x12\x1b\n" +
 	"\tthe_title\x18\x01 \x01(\tR\btheTitle\x12(\n" +
 	"\x06titles\x18\x02 \x03(\v2\x10.mangoplus.TitleR\x06titles\x12&\n" +
@@ -2006,7 +2150,7 @@ const file_mangaplus_proto_rawDesc = "" +
 	"view_count\x18\x06 \x01(\x05R\tviewCount\x12/\n" +
 	"\blanguage\x18\a \x01(\x0e2\x13.mangoplus.LanguageR\blanguage\x12L\n" +
 	"\x13title_update_status\x18\b \x01(\x0e2\x1c.mangoplus.TitleUpdateStatusR\x11titleUpdateStatus\x12,\n" +
-	"\x12favorite_image_url\x18\t \x01(\tR\x10favoriteImageUrl\"\xcd\x06\n" +
+	"\x12favorite_image_url\x18\t \x01(\tR\x10favoriteImageUrl\"\x98\a\n" +
 	"\x0fTitleDetailView\x12&\n" +
 	"\x05title\x18\x01 \x01(\v2\x10.mangoplus.TitleR\x05title\x12&\n" +
 	"\x0ftitle_image_url\x18\x02 \x01(\tR\rtitleImageUrl\x12\x1a\n" +
@@ -2026,7 +2170,13 @@ const file_mangaplus_proto_rawDesc = "" +
 	"\x11user_subscription\x18! \x01(\v2\x17.mangoplus.SubscriptionR\x10userSubscription\x12&\n" +
 	"\x05label\x18\" \x01(\v2\x10.mangoplus.LabelR\x05label\x12+\n" +
 	"\x12is_first_time_free\x18# \x01(\bR\x0fisFirstTimeFree\x12:\n" +
-	"\x0fchapter_list_v2\x18& \x03(\v2\x12.mangoplus.ChapterR\rchapterListV2\"\x92\x01\n" +
+	"\x0fchapter_list_v2\x18& \x03(\v2\x12.mangoplus.ChapterR\rchapterListV2\x12I\n" +
+	"\x12chapter_list_group\x18\x1c \x03(\v2\x1b.mangoplus.ChapterListGroupR\x10chapterListGroup\"\xfb\x01\n" +
+	"\x10ChapterListGroup\x12'\n" +
+	"\x0fchapter_numbers\x18\x01 \x01(\tR\x0echapterNumbers\x12@\n" +
+	"\x12first_chapter_list\x18\x02 \x03(\v2\x12.mangoplus.ChapterR\x10firstChapterList\x12<\n" +
+	"\x10mid_chapter_list\x18\x03 \x03(\v2\x12.mangoplus.ChapterR\x0emidChapterList\x12>\n" +
+	"\x11last_chapter_list\x18\x04 \x03(\v2\x12.mangoplus.ChapterR\x0flastChapterList\"\x92\x01\n" +
 	"\vTitleLabels\x12E\n" +
 	"\x10release_schedule\x18\x01 \x01(\x0e2\x1a.mangoplus.ReleaseScheduleR\x0freleaseSchedule\x12\x1f\n" +
 	"\vis_simulpub\x18\x02 \x01(\bR\n" +
@@ -2055,7 +2205,7 @@ const file_mangaplus_proto_rawDesc = "" +
 	"\rcomment_count\x18\x0e \x01(\x05R\fcommentCount\x12\x1d\n" +
 	"\n" +
 	"is_updated\x18\x0f \x01(\bR\tisUpdated\x129\n" +
-	"\fchapter_type\x18\x10 \x01(\x0e2\x16.mangoplus.ChapterTypeR\vchapterType\"\xbb\x04\n" +
+	"\fchapter_type\x18\x10 \x01(\x0e2\x16.mangoplus.ChapterTypeR\vchapterType\"\xda\x04\n" +
 	"\vMangaViewer\x12%\n" +
 	"\x05pages\x18\x01 \x03(\v2\x0f.mangoplus.PageR\x05pages\x12\x1d\n" +
 	"\n" +
@@ -2074,7 +2224,9 @@ const file_mangaplus_proto_rawDesc = "" +
 	"\x12is_horizontal_only\x18\f \x01(\bR\x10isHorizontalOnly\x12D\n" +
 	"\x11user_subscription\x18\r \x01(\v2\x17.mangoplus.SubscriptionR\x10userSubscription\x12\x1b\n" +
 	"\tplan_type\x18\x0e \x01(\tR\bplanType\x12%\n" +
-	"\x0etitle_language\x18\x0f \x01(\tR\rtitleLanguage\";\n" +
+	"\x0etitle_language\x18\x0f \x01(\tR\rtitleLanguage\x12\x1d\n" +
+	"\n" +
+	"view_token\x18\x13 \x01(\tR\tviewToken\";\n" +
 	"\x04Page\x123\n" +
 	"\n" +
 	"manga_page\x18\x01 \x01(\v2\x14.mangoplus.MangaPageR\tmangaPage\"\xa6\x01\n" +
@@ -2190,7 +2342,7 @@ func file_mangaplus_proto_rawDescGZIP() []byte {
 }
 
 var file_mangaplus_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
-var file_mangaplus_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_mangaplus_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_mangaplus_proto_goTypes = []any{
 	(ErrorAction)(0),            // 0: mangoplus.ErrorAction
 	(Language)(0),               // 1: mangoplus.Language
@@ -2206,58 +2358,66 @@ var file_mangaplus_proto_goTypes = []any{
 	(*Popup)(nil),               // 11: mangoplus.Popup
 	(*RegistrationData)(nil),    // 12: mangoplus.RegistrationData
 	(*SearchView)(nil),          // 13: mangoplus.SearchView
-	(*AllTitlesGroup)(nil),      // 14: mangoplus.AllTitlesGroup
-	(*Title)(nil),               // 15: mangoplus.Title
-	(*TitleDetailView)(nil),     // 16: mangoplus.TitleDetailView
-	(*TitleLabels)(nil),         // 17: mangoplus.TitleLabels
-	(*Label)(nil),               // 18: mangoplus.Label
-	(*Chapter)(nil),             // 19: mangoplus.Chapter
-	(*MangaViewer)(nil),         // 20: mangoplus.MangaViewer
-	(*Page)(nil),                // 21: mangoplus.Page
-	(*MangaPage)(nil),           // 22: mangoplus.MangaPage
-	(*ProfileSettingsView)(nil), // 23: mangoplus.ProfileSettingsView
-	(*SubscriptionView)(nil),    // 24: mangoplus.SubscriptionView
-	(*Subscription)(nil),        // 25: mangoplus.Subscription
+	(*AllTitlesView)(nil),       // 14: mangoplus.AllTitlesView
+	(*AllTitlesGroup)(nil),      // 15: mangoplus.AllTitlesGroup
+	(*Title)(nil),               // 16: mangoplus.Title
+	(*TitleDetailView)(nil),     // 17: mangoplus.TitleDetailView
+	(*ChapterListGroup)(nil),    // 18: mangoplus.ChapterListGroup
+	(*TitleLabels)(nil),         // 19: mangoplus.TitleLabels
+	(*Label)(nil),               // 20: mangoplus.Label
+	(*Chapter)(nil),             // 21: mangoplus.Chapter
+	(*MangaViewer)(nil),         // 22: mangoplus.MangaViewer
+	(*Page)(nil),                // 23: mangoplus.Page
+	(*MangaPage)(nil),           // 24: mangoplus.MangaPage
+	(*ProfileSettingsView)(nil), // 25: mangoplus.ProfileSettingsView
+	(*SubscriptionView)(nil),    // 26: mangoplus.SubscriptionView
+	(*Subscription)(nil),        // 27: mangoplus.Subscription
 }
 var file_mangaplus_proto_depIdxs = []int32{
 	9,  // 0: mangoplus.Response.success:type_name -> mangoplus.SuccessResult
 	10, // 1: mangoplus.Response.error:type_name -> mangoplus.ErrorResult
 	12, // 2: mangoplus.SuccessResult.registration_data:type_name -> mangoplus.RegistrationData
-	16, // 3: mangoplus.SuccessResult.title_detail_view:type_name -> mangoplus.TitleDetailView
-	20, // 4: mangoplus.SuccessResult.manga_viewer:type_name -> mangoplus.MangaViewer
-	23, // 5: mangoplus.SuccessResult.profile_settings_view:type_name -> mangoplus.ProfileSettingsView
-	13, // 6: mangoplus.SuccessResult.search_view:type_name -> mangoplus.SearchView
-	24, // 7: mangoplus.SuccessResult.subscription_view:type_name -> mangoplus.SubscriptionView
-	0,  // 8: mangoplus.ErrorResult.action:type_name -> mangoplus.ErrorAction
-	11, // 9: mangoplus.ErrorResult.english_popup:type_name -> mangoplus.Popup
-	11, // 10: mangoplus.ErrorResult.spanish_popup:type_name -> mangoplus.Popup
-	11, // 11: mangoplus.ErrorResult.popups:type_name -> mangoplus.Popup
-	1,  // 12: mangoplus.Popup.language:type_name -> mangoplus.Language
-	14, // 13: mangoplus.SearchView.all_titles_group:type_name -> mangoplus.AllTitlesGroup
-	15, // 14: mangoplus.AllTitlesGroup.titles:type_name -> mangoplus.Title
-	18, // 15: mangoplus.AllTitlesGroup.label:type_name -> mangoplus.Label
-	1,  // 16: mangoplus.Title.language:type_name -> mangoplus.Language
-	5,  // 17: mangoplus.Title.title_update_status:type_name -> mangoplus.TitleUpdateStatus
-	15, // 18: mangoplus.TitleDetailView.title:type_name -> mangoplus.Title
-	2,  // 19: mangoplus.TitleDetailView.rating:type_name -> mangoplus.Rating
-	17, // 20: mangoplus.TitleDetailView.title_labels:type_name -> mangoplus.TitleLabels
-	25, // 21: mangoplus.TitleDetailView.user_subscription:type_name -> mangoplus.Subscription
-	18, // 22: mangoplus.TitleDetailView.label:type_name -> mangoplus.Label
-	19, // 23: mangoplus.TitleDetailView.chapter_list_v2:type_name -> mangoplus.Chapter
-	3,  // 24: mangoplus.TitleLabels.release_schedule:type_name -> mangoplus.ReleaseSchedule
-	4,  // 25: mangoplus.Label.label:type_name -> mangoplus.LabelCode
-	6,  // 26: mangoplus.Chapter.chapter_type:type_name -> mangoplus.ChapterType
-	21, // 27: mangoplus.MangaViewer.pages:type_name -> mangoplus.Page
-	19, // 28: mangoplus.MangaViewer.chapters:type_name -> mangoplus.Chapter
-	25, // 29: mangoplus.MangaViewer.user_subscription:type_name -> mangoplus.Subscription
-	22, // 30: mangoplus.Page.manga_page:type_name -> mangoplus.MangaPage
-	7,  // 31: mangoplus.MangaPage.type:type_name -> mangoplus.PageType
-	25, // 32: mangoplus.SubscriptionView.user_subscription:type_name -> mangoplus.Subscription
-	33, // [33:33] is the sub-list for method output_type
-	33, // [33:33] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	17, // 3: mangoplus.SuccessResult.title_detail_view:type_name -> mangoplus.TitleDetailView
+	22, // 4: mangoplus.SuccessResult.manga_viewer:type_name -> mangoplus.MangaViewer
+	25, // 5: mangoplus.SuccessResult.profile_settings_view:type_name -> mangoplus.ProfileSettingsView
+	14, // 6: mangoplus.SuccessResult.all_titles_view:type_name -> mangoplus.AllTitlesView
+	13, // 7: mangoplus.SuccessResult.search_view:type_name -> mangoplus.SearchView
+	26, // 8: mangoplus.SuccessResult.subscription_view:type_name -> mangoplus.SubscriptionView
+	0,  // 9: mangoplus.ErrorResult.action:type_name -> mangoplus.ErrorAction
+	11, // 10: mangoplus.ErrorResult.english_popup:type_name -> mangoplus.Popup
+	11, // 11: mangoplus.ErrorResult.spanish_popup:type_name -> mangoplus.Popup
+	11, // 12: mangoplus.ErrorResult.popups:type_name -> mangoplus.Popup
+	1,  // 13: mangoplus.Popup.language:type_name -> mangoplus.Language
+	15, // 14: mangoplus.SearchView.all_titles_group:type_name -> mangoplus.AllTitlesGroup
+	15, // 15: mangoplus.AllTitlesView.all_titles_group:type_name -> mangoplus.AllTitlesGroup
+	16, // 16: mangoplus.AllTitlesGroup.titles:type_name -> mangoplus.Title
+	20, // 17: mangoplus.AllTitlesGroup.label:type_name -> mangoplus.Label
+	1,  // 18: mangoplus.Title.language:type_name -> mangoplus.Language
+	5,  // 19: mangoplus.Title.title_update_status:type_name -> mangoplus.TitleUpdateStatus
+	16, // 20: mangoplus.TitleDetailView.title:type_name -> mangoplus.Title
+	2,  // 21: mangoplus.TitleDetailView.rating:type_name -> mangoplus.Rating
+	19, // 22: mangoplus.TitleDetailView.title_labels:type_name -> mangoplus.TitleLabels
+	27, // 23: mangoplus.TitleDetailView.user_subscription:type_name -> mangoplus.Subscription
+	20, // 24: mangoplus.TitleDetailView.label:type_name -> mangoplus.Label
+	21, // 25: mangoplus.TitleDetailView.chapter_list_v2:type_name -> mangoplus.Chapter
+	18, // 26: mangoplus.TitleDetailView.chapter_list_group:type_name -> mangoplus.ChapterListGroup
+	21, // 27: mangoplus.ChapterListGroup.first_chapter_list:type_name -> mangoplus.Chapter
+	21, // 28: mangoplus.ChapterListGroup.mid_chapter_list:type_name -> mangoplus.Chapter
+	21, // 29: mangoplus.ChapterListGroup.last_chapter_list:type_name -> mangoplus.Chapter
+	3,  // 30: mangoplus.TitleLabels.release_schedule:type_name -> mangoplus.ReleaseSchedule
+	4,  // 31: mangoplus.Label.label:type_name -> mangoplus.LabelCode
+	6,  // 32: mangoplus.Chapter.chapter_type:type_name -> mangoplus.ChapterType
+	23, // 33: mangoplus.MangaViewer.pages:type_name -> mangoplus.Page
+	21, // 34: mangoplus.MangaViewer.chapters:type_name -> mangoplus.Chapter
+	27, // 35: mangoplus.MangaViewer.user_subscription:type_name -> mangoplus.Subscription
+	24, // 36: mangoplus.Page.manga_page:type_name -> mangoplus.MangaPage
+	7,  // 37: mangoplus.MangaPage.type:type_name -> mangoplus.PageType
+	27, // 38: mangoplus.SubscriptionView.user_subscription:type_name -> mangoplus.Subscription
+	39, // [39:39] is the sub-list for method output_type
+	39, // [39:39] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_mangaplus_proto_init() }
@@ -2271,7 +2431,7 @@ func file_mangaplus_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mangaplus_proto_rawDesc), len(file_mangaplus_proto_rawDesc)),
 			NumEnums:      8,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

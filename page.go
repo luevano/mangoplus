@@ -26,6 +26,10 @@ func (s *PageService) GetContext(ctx context.Context, id string, splitImages boo
 		"img_quality": string(imageQuality),
 	}
 
+	if s.client.web {
+		return s.getWeb(ctx, id, p)
+	}
+
 	subscription := s.client.options.Secret != ""
 	path := PagePath
 	switch s.client.options.Viewer {
@@ -50,14 +54,34 @@ func (s *PageService) GetContext(ctx context.Context, id string, splitImages boo
 	if mangaViewer == nil {
 		return nil, fmt.Errorf("get chapter pages %q: no manga viewer in response", id)
 	}
+	return mangaPages(mangaViewer), nil
+}
 
+// getWeb: The web api's viewer, its token goes with the images (ImageHeaders).
+func (s *PageService) getWeb(ctx context.Context, id string, p map[string]string) ([]*MangaPage, error) {
+	p["clang"] = webContentLanguage
+	res, err := s.client.Request(ctx, http.MethodGet, PagePathApp, p)
+	if err != nil {
+		return nil, fmt.Errorf("get chapter pages %q: %w", id, err)
+	}
+	mangaViewer := res.GetMangaViewer()
+	if mangaViewer == nil {
+		return nil, fmt.Errorf("get chapter pages %q: no manga viewer in response", id)
+	}
+	s.client.viewTokenMu.Lock()
+	s.client.viewToken = mangaViewer.ViewToken
+	s.client.viewTokenMu.Unlock()
+	return mangaPages(mangaViewer), nil
+}
+
+func mangaPages(mangaViewer *MangaViewer) []*MangaPage {
 	var pages []*MangaPage
 	for _, page := range mangaViewer.Pages {
 		if page.MangaPage != nil {
 			pages = append(pages, page.MangaPage)
 		}
 	}
-	return pages, nil
+	return pages
 }
 
 func yesNo(b bool) string {

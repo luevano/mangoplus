@@ -11,6 +11,10 @@ import (
 // The API rejects requests that don't look like they come from the Android app.
 const defaultUserAgent = "okhttp/4.12.0"
 
+// defaultWebUserAgent: The web api gets a browser's, a copy of libmangal's netutil.BrowserUserAgent
+// like creators' default.
+const defaultWebUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:158.0) Gecko/20100101 Firefox/158.0"
+
 // defaultTimeout: Timeout of the client used when Options.HTTPClient is nil.
 const defaultTimeout = time.Minute
 
@@ -28,12 +32,33 @@ const (
 	ViewerLegacy Viewer = "legacy"
 )
 
+// API: Which MangaPlus api the client talks to.
+type API string
+
+const (
+	// APIApp: The Android app's api (BaseAPI), with a device secret (registered if none is given).
+	APIApp API = "app"
+	// APIWeb: The website's api (BaseWebAPI), no secret or device: only what the website shows
+	// (first and latest chapters of a title, no account), at most 1 request per second.
+	APIWeb API = "web"
+	// APIAuto: APIWeb when neither Secret nor FreeSecret is set, APIApp otherwise.
+	APIAuto API = "auto"
+)
+
 type Options struct {
 	UserAgent  string
 	OSVersion  string
 	AppVersion string
 	AndroidID  string
 	Viewer     Viewer
+
+	// API: Optional, APIApp when empty.
+	API API
+
+	// WebUserAgent: User agent of the web api's requests and their images.
+	//
+	// Optional, a browser's when empty.
+	WebUserAgent string
 
 	// RequestInterval: Minimum time between API requests.
 	//
@@ -79,7 +104,23 @@ func (o Options) validate() error {
 	if o.Viewer != ViewerLegacy && o.Viewer != ViewerApp {
 		return fmt.Errorf("Viewer %q is not one of %q or %q", o.Viewer, ViewerLegacy, ViewerApp)
 	}
+	switch o.API {
+	case "", APIApp, APIWeb, APIAuto:
+	default:
+		return fmt.Errorf("API %q is not one of %q, %q or %q", o.API, APIApp, APIWeb, APIAuto)
+	}
 	return nil
+}
+
+// useWebAPI: Whether these options pick the web api, see API.
+func (o Options) useWebAPI() bool {
+	switch o.API {
+	case APIWeb:
+		return true
+	case APIAuto:
+		return o.Secret == "" && o.FreeSecret == ""
+	}
+	return false
 }
 
 func DefaultOptions() Options {
@@ -92,6 +133,7 @@ func DefaultOptions() Options {
 		AppVersion: "265",
 		AndroidID:  android_id,
 		Viewer:     ViewerApp,
+		API:        APIApp,
 
 		RequestInterval: 500 * time.Millisecond,
 	}

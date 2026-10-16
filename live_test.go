@@ -108,3 +108,23 @@ func TestLiveUserProfile(t *testing.T) {
 		t.Fatalf("Getting profile: %s\n", err.Error())
 	}
 }
+
+//
+// web api
+//
+
+func TestLiveWebMangaGet(t *testing.T) {
+	skipUnlessLive(t)
+	o := DefaultOptions()
+	o.API = APIWeb
+	titleDetail, err := mustClient(o).Manga.Get("100020")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if name := titleDetail.GetTitle().GetName(); name != "One Piece" {
+		t.Errorf("title %q, want %q", name, "One Piece")
+	}
+	if len(titleDetail.ChapterListV2) == 0 {
+		t.Error("no chapters")
+	}
+}
